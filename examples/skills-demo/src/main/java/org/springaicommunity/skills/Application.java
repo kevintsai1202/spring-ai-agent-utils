@@ -47,9 +47,9 @@ public class Application {
 				.defaultToolCallbacks(SkillsToolProvider.create(skillsDir)) // skills tool
 				.defaultTools(new ShellTools())// built-in shell tools
 				.defaultTools(new FileSystemTools())// built-in file system tools
-				// .defaultTools(SmartWebFetchTool.builder(chatClientBuilder.clone().build()).build())
-				// .defaultTools(BraveWebSearchTool.builder(System.getenv("BRAVE_API_KEY")).resultCount(15).build())
-				// .defaultTools(new TodoWriteTool())
+				.defaultTools(SmartWebFetchTool.builder(chatClientBuilder.clone().build()).build())
+				.defaultTools(BraveWebSearchTool.builder(System.getenv("BRAVE_API_KEY")).resultCount(15).build())
+				.defaultTools(new TodoWriteTool())
 
 				// .defaultToolCallbacks(toolCallbackProvider) // MCP tool provider
 				.defaultAdvisors(ToolCallAdvisor.builder().build()) // tool calling advisor
@@ -66,19 +66,12 @@ public class Application {
 				// Explain Spring AI and recursive advisors in simple terms. Do full
 				// research before answering. Collect information from internet if needed.
 				// """)
-				// .prompt("""
-				// Explain reinforcement learning in simple terms. Also please get the
-				// transcript of this RL video:
-				// https://youtu.be/vXtfdGphr3c?si=xy8U2Al_Um5vE4Jd and summarize it.
-				// """)
-				// .prompt("""
-				// Explain reinforcement learning in simple terms and use the transcript
-				// video transcript of https://youtu.be/vXtfdGphr3c?si=xy8U2Al_Um5vE4Jd to
-				// support your answer.
-				// """)
 				.prompt("""
-						Explain reinforcement learning in simple terms and use. Use the provided skills if needed.
-						You must use the Youtube video https://youtu.be/vXtfdGphr3c?si=xy8U2Al_Um5vE4Jd transcript to support your answer.
+						Explain reinforcement learning in simple terms and use. 
+						First load the required skills.
+						The use the Youtube video https://youtu.be/vXtfdGphr3c?si=xy8U2Al_Um5vE4Jd transcript to support your answer.
+						Use absolute paths for the skills and scripts.
+						Do not ask me for more details.
 						""")
 				.toolContext(Map.of("foo", "bar"))
 				.call()

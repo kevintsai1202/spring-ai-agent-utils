@@ -1,6 +1,6 @@
 ---
 name: ai-tutor
-description: Use when user asks to explain, break down, or help understand technical concepts (AI, ML, or other technical topics). Makes complex ideas accessible through plain English and narrative structure.
+description: Use when user asks to explain, break down, or help understand technical concepts (AI, ML, or other technical topics). Makes complex ideas accessible through plain English and narrative structure. Use the provided scripts to transcribe videos
 ---
 
 # AI Tutor
