@@ -10,6 +10,7 @@ import org.springaicommunity.ai.agent.tools.SmartWebFetchTool;
 import org.springaicommunity.ai.agent.tools.TodoWriteTool;
 
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.ToolCallAdvisor;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.beans.factory.annotation.Value;
@@ -51,7 +52,7 @@ public class Application {
 
 				// .defaultToolCallbacks(toolCallbackProvider) // MCP tool provider
 				.defaultAdvisors(ToolCallAdvisor.builder().conversationHistoryEnabled(false).build()) // tool calling advisor
-				.defaultAdvisors(MessageChatMemoryAdvisor2.builder(chatMemory).order(Ordered.HIGHEST_PRECEDENCE + 1000).build())
+				.defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).order(Ordered.HIGHEST_PRECEDENCE + 1000).build())
 				.defaultAdvisors(new MyLoggingAdvisor()) // logging advisor
 				.build();
 				// @formatter:on
