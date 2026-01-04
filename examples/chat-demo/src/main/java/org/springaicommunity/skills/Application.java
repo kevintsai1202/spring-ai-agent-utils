@@ -43,7 +43,7 @@ public class Application {
 
 			ChatClient chatClient = chatClientBuilder // @formatter:off
 				.defaultSystem(systemPrompt)
-				.defaultToolCallbacks(SkillsTool.builder().skillsRootDirectory(skillsDir).build()) // skills tool
+				.defaultToolCallbacks(SkillsTool.builder().addSkillsDirectory(skillsDir).build()) // skills tool
 				.defaultTools(new ShellTools())// built-in shell tools
 				.defaultTools(new FileSystemTools())// built-in file system tools
 				.defaultTools(SmartWebFetchTool.builder(chatClientBuilder.clone().build()).build())

@@ -56,7 +56,7 @@ public class Application {
             ChatClient chatClient = chatClientBuilder
                 // Load skills
                 .defaultToolCallbacks(SkillsTool.builder()
-                    .skillsRootDirectory(".claude/skills")
+                    .addSkillsDirectory(".claude/skills")
                     .build())
 
                 // Register tools
@@ -236,7 +236,7 @@ To enable skills to load additional references or run scripts, include the appro
 ```java
 ChatClient chatClient = chatClientBuilder
     .defaultToolCallbacks(SkillsTool.builder()
-        .skillsRootDirectory(".claude/skills")
+        .addSkillsDirectory(".claude/skills")
         .build())
 
     // Required for skills to load reference files (reference.md, examples.md, etc.)

@@ -57,7 +57,9 @@ public class Application {
         return args -> {
             ChatClient chatClient = chatClientBuilder
                 // Load agent skills
-                .defaultToolCallbacks(SkillsToolProvider.create(".claude/skills"))
+                .defaultToolCallbacks(SkillsTool.builder()
+                    .addSkillsDirectory(".claude/skills")
+                    .build())
 
                 // Register tools
                 .defaultTools(new ShellTools())

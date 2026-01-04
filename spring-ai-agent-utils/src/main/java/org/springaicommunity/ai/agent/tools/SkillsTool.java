@@ -16,14 +16,19 @@
 package org.springaicommunity.ai.agent.tools;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import org.springaicommunity.ai.agent.utils.SkillsUtils;
-import org.springaicommunity.ai.agent.utils.SkillsUtils.Skill;
+import org.springaicommunity.ai.agent.utils.MarkdownParser;
 
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.annotation.ToolParam;
@@ -33,37 +38,33 @@ import org.springframework.util.Assert;
 /**
  * @author Christian Tzolov
  */
-
 public class SkillsTool {
 
-	private static String buildDescription(String availableSkillsXml) {
-		return """
-				Execute a skill within the main conversation
+	private static final String TOOL_DESCRIPTION_TEMPLATE = """
+			Execute a skill within the main conversation
 
-				<skills_instructions>
-				When users ask you to perform tasks, check if any of the available skills below can help complete the task more effectively. Skills provide specialized capabilities and domain knowledge.
+			<skills_instructions>
+			When users ask you to perform tasks, check if any of the available skills below can help complete the task more effectively. Skills provide specialized capabilities and domain knowledge.
 
-				How to use skills:
-				- Invoke skills using this tool with the skill name only (no arguments)
-				- When you invoke a skill, you will see <command-message>The "{name}" skill is loading</command-message>
-				- The skill's prompt will expand and provide detailed instructions on how to complete the task
-				- Examples:
-				  - `command: "pdf"` - invoke the pdf skill
-				  - `command: "xlsx"` - invoke the xlsx skill
-				  - `command: "ms-office-suite:pdf"` - invoke using fully qualified name
+			How to use skills:
+			- Invoke skills using this tool with the skill name only (no arguments)
+			- When you invoke a skill, you will see <command-message>The "{name}" skill is loading</command-message>
+			- The skill's prompt will expand and provide detailed instructions on how to complete the task
+			- Examples:
+			  - `command: "pdf"` - invoke the pdf skill
+			  - `command: "xlsx"` - invoke the xlsx skill
+			  - `command: "ms-office-suite:pdf"` - invoke using fully qualified name
 
-				Important:
-				- Only use skills listed in <available_skills> below
-				- Do not invoke a skill that is already running
-				- Do not use this tool for built-in CLI commands (like /help, /clear, etc.)
-				</skills_instructions>
+			Important:
+			- Only use skills listed in <available_skills> below
+			- Do not invoke a skill that is already running
+			- Do not use this tool for built-in CLI commands (like /help, /clear, etc.)
+			</skills_instructions>
 
-				<available_skills>
-				%s
-				</available_skills>
-				"""
-			.formatted(availableSkillsXml);
-	}
+			<available_skills>
+			%s
+			</available_skills>
+			""";
 
 	public static record SkillsInput(
 			@ToolParam(description = "The skill name (no arguments). E.g., \"pdf\" or \"xlsx\"") String command) {
@@ -82,23 +83,13 @@ public class SkillsTool {
 			Skill skill = this.skillsMap.get(input.command());
 
 			if (skill != null) {
-				var skillBaseDirectory = skill.getPath().getParent().toString();
-				return "Base directory for this skill: %s\n\n%s".formatted(skillBaseDirectory, skill.getContent());
+				var skillBaseDirectory = skill.path().getParent().toString();
+				return "Base directory for this skill: %s\n\n%s".formatted(skillBaseDirectory, skill.content());
 			}
 
 			return "Skill not found: " + input.command();
 		}
 
-	}
-
-	private static String skillToXml(Skill skill) {
-		String frontMatterXml = skill.getFrontMatter()
-			.entrySet()
-			.stream()
-			.map(e -> "  <%s>%s</%s>".formatted(e.getKey(), e.getValue(), e.getKey()))
-			.collect(Collectors.joining("\n"));
-
-		return "<skill>\n%s\n</skill>".formatted(frontMatterXml);
 	}
 
 	public static Builder builder() {
@@ -107,54 +98,114 @@ public class SkillsTool {
 
 	public static class Builder {
 
-		private Map<String, Skill> skillsMap = new HashMap<>();
+		private List<Skill> skills = new ArrayList<>();
+
+		private String toolDescriptionTemplate = TOOL_DESCRIPTION_TEMPLATE;
 
 		private Builder() {
 
 		}
 
-		public Builder skillsMap(Map<String, Skill> skillsMap) {
-			Assert.notNull(skillsMap, "skills map can't be null");
-			this.skillsMap.putAll(skillsMap);
+		public Builder toolDescriptionTemplate(String template) {
+			this.toolDescriptionTemplate = template;
 			return this;
 		}
 
-		public Builder skillsRootDirectory(String skillsRootDirectory) {
-			try {
-				this.skillsMap.putAll(SkillsUtils.skillsMap(skillsRootDirectory));
-			}
-			catch (IOException ex) {
-				throw new RuntimeException("Failed to load skills from directory: " + skillsRootDirectory, ex);
-			}
-
+		public Builder addSkillsDirectory(String skillsRootDirectory) {
+			this.addSkillsDirectories(List.of(skillsRootDirectory));
 			return this;
 		}
 
-		public Builder skillsRootDirectories(List<String> skillsRootDirectories) {
-			try {
-				this.skillsMap.putAll(SkillsUtils.skillsMap(skillsRootDirectories));
+		public Builder addSkillsDirectories(List<String> skillsRootDirectories) {
+			for (String skillsRootDirectory : skillsRootDirectories) {
+				try {
+					this.skills.addAll(skills(skillsRootDirectory));
+				}
+				catch (IOException ex) {
+					throw new RuntimeException("Failed to load skills from directory: " + skillsRootDirectory, ex);
+				}
 			}
-			catch (IOException ex) {
-				throw new RuntimeException("Failed to load skills from directories: " + skillsRootDirectories, ex);
-			}
-
 			return this;
 		}
 
 		public ToolCallback build() {
-			Assert.notEmpty(this.skillsMap, "At least one skill must be configured");
+			Assert.notEmpty(this.skills, "At least one skill must be configured");
 
-			String skillsXml = skillsMap.values()
-				.stream()
-				.map(SkillsTool::skillToXml)
-				.collect(Collectors.joining("\n"));
+			String skillsXml = this.skills.stream().map(s -> s.toXml()).collect(Collectors.joining("\n"));
 
-			return FunctionToolCallback.builder("Skill", new SkillsFunction(skillsMap))
-				.description(buildDescription(skillsXml))
+			return FunctionToolCallback.builder("Skill", new SkillsFunction(toSkillsMap(this.skills)))
+				.description(this.toolDescriptionTemplate.formatted(skillsXml))
 				.inputType(SkillsInput.class)
 				.build();
 		}
 
+	}
+
+	/**
+	 * Represents a SKILL.md file with its location and parsed content.
+	 */
+	private static record Skill(Path path, Map<String, String> frontMatter, String content) {
+
+		public String toXml() {
+			String frontMatterXml = this.frontMatter()
+				.entrySet()
+				.stream()
+				.map(e -> "  <%s>%s</%s>".formatted(e.getKey(), e.getValue(), e.getKey()))
+				.collect(Collectors.joining("\n"));
+
+			return "<skill>\n%s\n</skill>".formatted(frontMatterXml);
+		}
+
+	}
+
+	private static Map<String, Skill> toSkillsMap(List<Skill> skills) {
+
+		Map<String, Skill> skillsMap = new HashMap<>();
+
+		for (Skill skillFile : skills) {
+			skillsMap.put(skillFile.frontMatter().get("name"), skillFile);
+		}
+
+		return skillsMap;
+	}
+
+	/**
+	 * Recursively finds all SKILL.md files in the given root directory and returns their
+	 * parsed contents.
+	 * @param rootDirectory the root directory to search for SKILL.md files
+	 * @return a list of SkillFile objects containing the path, front-matter, and content
+	 * of each SKILL.md file
+	 * @throws IOException if an I/O error occurs while reading the directory or files
+	 */
+	private static List<Skill> skills(String rootDirectory) throws IOException {
+		Path rootPath = Paths.get(rootDirectory);
+
+		if (!Files.exists(rootPath)) {
+			throw new IOException("Root directory does not exist: " + rootDirectory);
+		}
+
+		if (!Files.isDirectory(rootPath)) {
+			throw new IOException("Path is not a directory: " + rootDirectory);
+		}
+
+		List<Skill> skillFiles = new ArrayList<>();
+
+		try (Stream<Path> paths = Files.walk(rootPath)) {
+			paths.filter(Files::isRegularFile)
+				.filter(path -> path.getFileName().toString().equals("SKILL.md"))
+				.forEach(path -> {
+					try {
+						String markdown = Files.readString(path, StandardCharsets.UTF_8);
+						MarkdownParser parser = new MarkdownParser(markdown);
+						skillFiles.add(new Skill(path, parser.getFrontMatter(), parser.getContent()));
+					}
+					catch (IOException e) {
+						throw new RuntimeException("Failed to read SKILL.md file: " + path, e);
+					}
+				});
+		}
+
+		return skillFiles;
 	}
 
 }
