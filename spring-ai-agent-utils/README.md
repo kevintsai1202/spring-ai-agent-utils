@@ -128,6 +128,72 @@ String result = grepTool.grep("public class.*", "./src", null,
     OutputMode.files_with_matches, null, null, null, null, null, "java", null, null, null);
 ```
 
+### SmartWebFetchTool
+
+AI-powered web content fetching and summarization tool with intelligent caching and safety features. Fetches web pages, converts HTML to Markdown, and uses AI to extract relevant information based on a user prompt.
+
+[**View Full Documentation →**](docs/SmartWebFetchTool.md)
+
+**Quick Example:**
+```java
+// Build with required ChatClient
+SmartWebFetchTool webFetch = SmartWebFetchTool.builder(chatClient)
+    .maxContentLength(150_000)    // Optional: default 100KB
+    .domainSafetyCheck(true)      // Optional: default true
+    .maxRetries(2)                // Optional: default 2
+    .build();
+
+// Fetch and summarize web content
+String result = webFetch.webFetch(
+    "https://docs.spring.io/spring-ai/reference/",
+    "What are the key features of Spring AI?"
+);
+```
+
+### TodoWriteTool
+
+Structured task list management for AI coding sessions. Helps AI agents track progress, organize complex tasks, and provide visibility into task execution.
+
+[**View Full Documentation →**](docs/TodoWriteTool.md)
+
+**Quick Example:**
+```java
+TodoWriteTool todoTool = new TodoWriteTool();
+
+// Create and manage task list
+Todos todos = new Todos(List.of(
+    new TodoItem("Read configuration", Status.completed, "Reading configuration"),
+    new TodoItem("Parse settings", Status.in_progress, "Parsing settings"),
+    new TodoItem("Validate config", Status.pending, "Validating config")
+));
+
+todoTool.todoWrite(todos);
+```
+
+### BraveWebSearchTool
+
+Web search capabilities using the Brave Search API. Provides up-to-date information from the web with optional domain filtering.
+
+[**View Full Documentation →**](docs/BraveWebSearchTool.md)
+
+**Quick Example:**
+```java
+// Build with API key
+BraveWebSearchTool searchTool = BraveWebSearchTool.builder(apiKey)
+    .resultCount(10)  // Optional: default 10
+    .build();
+
+// Search the web
+String results = searchTool.webSearch(
+    "Spring AI features 2025",
+    null,  // allowedDomains (optional)
+    null   // blockedDomains (optional)
+);
+
+// Or use search operators for efficiency
+String results2 = searchTool.webSearch("Spring AI site:spring.io", null, null);
+```
+
 ## Skills Development
 
 Skills are markdown files that teach the AI agent how to perform specific tasks. Based on [Claude Code's Agent Skills](https://code.claude.com/docs/en/skills#agent-skills), the AI automatically invokes relevant skills through semantic matching.
