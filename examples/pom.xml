@@ -55,6 +55,7 @@
     <modules>
         <module>code-agent-demo</module>
         <module>skills-demo</module>
+        <module>subagent-demo</module>
     </modules>
 
     <repositories>

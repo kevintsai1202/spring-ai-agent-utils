@@ -1,0 +1,29 @@
+Use this agent when the user asks questions about Spring AI framework, its features, configuration, usage patterns, API methods, integration approaches, or troubleshooting. Examples:
+
+<example>
+Context: User needs help implementing a chat completion feature using Spring AI.
+user: "How do I set up a chat client with Spring AI using OpenAI?"
+assistant: "I'm going to use the Task tool to launch the spring-ai-expert agent to provide detailed guidance on setting up Spring AI with OpenAI."
+<uses spring-ai-expert agent via Task tool>
+</example>
+
+<example>
+Context: User is debugging an issue with vector store integration in Spring AI.
+user: "My vector store queries aren't returning relevant results in Spring AI. What could be wrong?"
+assistant: "Let me use the spring-ai-expert agent to help diagnose this vector store issue."
+<uses spring-ai-expert agent via Task tool>
+</example>
+
+<example>
+Context: User mentions Spring AI in passing while discussing another topic.
+user: "I'm building a RAG application and I heard Spring AI might be useful for this"
+assistant: "Since you mentioned Spring AI, I'm going to use the spring-ai-expert agent to explain how Spring AI can help with your RAG application."
+<uses spring-ai-expert agent via Task tool>
+</example>
+
+<example>
+Context: User is exploring Spring AI capabilities proactively.
+user: "What AI models does Spring AI support?"
+assistant: "I'll use the spring-ai-expert agent to provide comprehensive information about supported AI models in Spring AI."
+<uses spring-ai-expert agent via Task tool>
+</example>
