@@ -55,21 +55,33 @@ public class Application {
 
     @Bean
     CommandLineRunner demo(ChatClient.Builder chatClientBuilder) {
+        
+        var taskTools = TaskToolCallbackProvider.builder()
+				.agentDirectories(agentsPaths)
+				.skillsDirectories(skillPaths)
+				.chatClientBuilder(chatClientBuilder.clone()
+					.defaultToolContext(Map.of("foo", "bar")))
+				.build();
+
         return args -> {
             ChatClient chatClient = chatClientBuilder
                 // Load skills
                 .defaultToolCallbacks(SkillsTool.builder()
                     .addSkillsDirectory(".claude/skills")
                     .build())
+                
+                // Subagents
+                .defaultToolCallbacks(taskTools)
 
                 // Register tools
-                .defaultTools(new ShellTools())
-                .defaultTools(new FileSystemTools())
-                .defaultTools(GrepTool.builder().build())
-                .defaultTools(GlobTool.builder().build())
-                .defaultTools(SmartWebFetchTool.builder(chatClient).build())
-                .defaultTools(BraveWebSearchTool.builder(apiKey).build())
-                .defaultTools(TodoWriteTool.builder().build())
+                .defaultTools(
+                    ShellTools.builder().build(),
+                    FileSystemTools.builder().build(),
+                    GrepTool.builder().build(),
+                    GlobTool.builder().build(),
+                    SmartWebFetchTool.builder(chatClient).build(),
+                    BraveWebSearchTool.builder(apiKey).build(),
+                    TodoWriteTool.builder().build())
                 .build();
 
             String response = chatClient
