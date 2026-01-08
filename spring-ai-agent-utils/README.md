@@ -17,7 +17,8 @@ Spring AI Agent Utils reimplements core [Claude Code](https://code.claude.com/do
 - **TodoWriteTool** - Structured task management with state tracking
 - **SmartWebFetchTool** - AI-powered web content summarization with caching
 - **BraveWebSearchTool** - Web search with domain filtering
-- **SkillsTool** - Extend AI agent capabilities with reusable, composable knowledge modules defined in Markdown with YAML front-matter.
+- **SkillsTool** - Extend AI agent capabilities with reusable, composable knowledge modules defined in Markdown with YAML front-matter
+- **TaskTools** - Hierarchical autonomous sub-agent system for delegating complex tasks to specialized agents with dedicated context windows
 
 ## Installation
 
@@ -231,6 +232,66 @@ description: What this skill does and when to use it. Include trigger keywords.
 Instructions for the AI agent to follow...
 ```
 
+### TaskTools - Hierarchical Sub-Agent System
+
+Enable your AI agent to delegate complex, multi-step tasks to specialized sub-agents with dedicated context windows. Based on [Claude Code's sub-agents](https://code.claude.com/docs/en/sub-agents), this system provides autonomous task execution with specialized expertise.
+
+[**View Full Documentation →**](docs/TaskTools.md)
+
+**Quick Example:**
+```java
+// Configure Task tools with built-in and custom sub-agents
+var taskTools = TaskToolCallbackProvider.builder()
+    .chatClientBuilder(chatClientBuilder)
+    .agentDirectories(".claude/agents")  // Custom sub-agents
+    .skillsDirectories(".claude/skills") // Skills for sub-agents
+    .build();
+
+// Build main chat client with Task tools
+ChatClient chatClient = chatClientBuilder
+    .defaultToolCallbacks(taskTools)
+    .defaultTools(new FileSystemTools(), new GrepTool())
+    .build();
+
+// Agent automatically delegates to appropriate sub-agents
+String response = chatClient
+    .prompt("Explore the authentication module and explain how it works")
+    .call()
+    .content();
+// Main agent recognizes exploration task and delegates to Explore sub-agent
+```
+
+**Built-in Sub-Agents:**
+- **general-purpose** - Complex research and multi-step tasks with full tool access
+- **Explore** - Fast, read-only codebase exploration with thoroughness levels (quick/medium/very thorough)
+
+**Create Custom Sub-Agent:** `.claude/agents/code-reviewer.md`
+```markdown
+---
+name: code-reviewer
+description: Expert code reviewer. Use proactively after writing or modifying code.
+tools: Read, Grep, Glob, Bash
+model: sonnet
+---
+
+You are a senior code reviewer with expertise in code quality and security.
+
+**Review Checklist:**
+- Code clarity and readability
+- Error handling and security
+- Test coverage and performance
+
+**Output Format:**
+Organize feedback by priority: Critical Issues, Warnings, Suggestions.
+```
+
+**Key Features:**
+- **Dedicated Context** - Each sub-agent has its own context window, preventing pollution of main conversation
+- **Specialized Prompts** - Custom system prompts tailored for specific domains
+- **Tool Filtering** - Limit sub-agents to only necessary tools
+- **Background Execution** - Run long-running tasks asynchronously with TaskOutputTool
+- **Resumable Agents** - Continue long-running research across multiple interactions
+
 ## Configuration
 
 **application.properties:**
@@ -245,10 +306,11 @@ brave.api.key=${BRAVE_API_KEY}
 
 ## Examples
 
-Two comprehensive examples demonstrate different use cases:
+Three comprehensive examples demonstrate different use cases:
 
-- **[code-agent-demo](../examples/code-agent-demo)** - Full-featured AI coding assistant with interactive CLI, all 7 tools, conversation memory, and multi-model support
+- **[code-agent-demo](../examples/code-agent-demo)** - Full-featured AI coding assistant with interactive CLI, all tools, conversation memory, and multi-model support
 - **[skills-demo](../examples/skills-demo)** - Focused demonstration of the SkillsTool system with custom skill development and helper scripts
+- **[subagent-demo](../examples/subagent-demo)** - Demonstrates hierarchical sub-agent system with custom Spring AI expert sub-agent and TaskTools integration
 
 See the [Examples README](../examples/README.md) for detailed setup, configuration, and usage guide.
 

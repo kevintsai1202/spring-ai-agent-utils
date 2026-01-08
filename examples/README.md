@@ -55,6 +55,61 @@ See the [Code Agent Demo README](code-agent-demo/README.md) for detailed setup, 
 
 ---
 
+### [Sub-Agent Demo](subagent-demo)
+
+Demonstrates the hierarchical sub-agent system with custom sub-agent creation and TaskTools integration.
+
+**What it demonstrates:**
+- TaskTools integration with TaskToolCallbackProvider
+- Custom sub-agent definition (Spring AI Expert)
+- Built-in sub-agents (general-purpose, Explore)
+- Sub-agent delegation and autonomous task execution
+- Background task execution with TaskOutputTool
+- Tool filtering for sub-agents
+- Interactive chat with sub-agent capabilities
+
+**Best for:**
+- Learning how to create and use custom sub-agents
+- Understanding hierarchical agent architectures
+- Building specialized expert agents for domains
+- Managing complex tasks with autonomous delegation
+
+**Key Features:**
+- **spring-ai-expert** sub-agent - Specialized agent that consults Spring AI documentation and source code
+- Automatic delegation based on sub-agent descriptions
+- Explicit sub-agent invocation by users
+- Custom agent directories for project-specific sub-agents
+- Integration with all core tools (FileSystem, Grep, Glob, Shell, etc.)
+
+**Quick Start:**
+```bash
+cd subagent-demo
+export ANTHROPIC_API_KEY=your-anthropic-key  # or use other providers
+export BRAVE_API_KEY=your-brave-key          # optional, for web search
+mvn spring-boot:run
+```
+
+**Interactive Usage:**
+```
+I am your assistant.
+
+USER: How do I configure embeddings in Spring AI?
+ASSISTANT: [Automatically delegates to spring-ai-expert sub-agent]
+          [Sub-agent fetches Spring AI docs and provides detailed answer]
+
+USER: Explore the authentication implementation in this codebase
+ASSISTANT: [Uses Explore sub-agent for fast read-only exploration]
+          [Returns comprehensive analysis of authentication module]
+
+USER: Use the general-purpose agent to refactor the UserService class
+ASSISTANT: [Delegates to general-purpose sub-agent with full tool access]
+          [Sub-agent analyzes, refactors, and tests the code]
+```
+
+See the [TaskTools documentation](../spring-ai-agent-utils/docs/TaskTools.md) for comprehensive guide on creating custom sub-agents.
+
+---
+
 ### [Skills Demo](skills-demo)
 
 Focused demonstration of the SkillsTool system and custom skill development.
@@ -108,18 +163,19 @@ The agent automatically:
 
 ## Comparison
 
-| Feature | Code Agent Demo | Skills Demo |
-|---------|----------------|-------------|
-| **Focus** | Complete AI coding assistant | Skills system deep dive |
-| **Interaction** | Interactive CLI loop | Single-prompt execution |
-| **Tools** | All 7 tools integrated | Subset focused on skills |
-| **Complexity** | Production-ready | Learning-focused |
-| **Memory** | 500-message window | Basic configuration |
-| **Best for** | Building complete agents | Creating custom skills |
+| Feature | Code Agent Demo | Sub-Agent Demo | Skills Demo |
+|---------|----------------|----------------|-------------|
+| **Focus** | Complete AI coding assistant | Hierarchical sub-agents | Skills system deep dive |
+| **Interaction** | Interactive CLI loop | Interactive CLI loop | Single-prompt execution |
+| **Tools** | All tools integrated | All tools + TaskTools | Subset focused on skills |
+| **Complexity** | Production-ready | Advanced patterns | Learning-focused |
+| **Memory** | 500-message window | 500-message window | Basic configuration |
+| **Special Features** | Multi-tool integration | Custom sub-agents, delegation | Helper scripts, YouTube integration |
+| **Best for** | Building complete agents | Complex multi-agent systems | Creating custom skills |
 
 ## Common Setup
 
-Both examples require:
+All examples require:
 
 ### Prerequisites
 - Java 17 or higher
@@ -318,10 +374,11 @@ spring.ai.google.genai.options.model=gemini-3-pro-preview
 ## Next Steps
 
 1. **Start with code-agent-demo** to understand the full system
-2. **Explore skills-demo** to learn skill development
-3. **Read the tool documentation** in [spring-ai-agent-utils/docs/](../spring-ai-agent-utils/docs/)
-4. **Create your own skills** for domain-specific tasks
-5. **Build your own agent** combining patterns from both examples
+2. **Explore subagent-demo** to learn hierarchical agent patterns
+3. **Try skills-demo** to learn skill development
+4. **Read the tool documentation** in [spring-ai-agent-utils/docs/](../spring-ai-agent-utils/docs/)
+5. **Create your own skills and sub-agents** for domain-specific tasks
+6. **Build your own agent** combining patterns from all examples
 
 ## Troubleshooting
 
