@@ -268,7 +268,7 @@
                         <configuration>
                             <publishingServerId>central</publishingServerId>
                             <excludeArtifacts>
-                                tool-search-tool-parent,examples-parent,tool-search-tool-app
+                                spring-ai-agent-utils-parent,examples-parent,tool-search-tool-app
                             </excludeArtifacts>
                             <autoPublish>true</autoPublish>
                         </configuration>
