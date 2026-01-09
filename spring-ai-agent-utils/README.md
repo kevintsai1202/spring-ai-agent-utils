@@ -4,11 +4,11 @@ A Spring AI library that brings Claude Code-inspired tools and skills to your AI
 
 ## Overview
 
-Spring AI Agent Utils reimplements core [Claude Code](https://code.claude.com/docs/en/overview) capabilities as Spring AI tools, enabling sophisticated agentic workflows with file operations, shell execution, web access, task management, and extensible skills.
+[Spring AI](https://docs.spring.io/spring-ai/reference/2.0-SNAPSHOT/index.html) Agent Utils reimplements core [Claude Code](https://code.claude.com/docs/en/overview) capabilities as Spring AI tools, enabling sophisticated agentic workflows with file operations, shell execution, web access, task management, and extensible skills.
 
-## Features
+## Agentic Utils
 
-### Agentic Tools
+These are the core tools needed to implement any agentic behavior:
 
 - **[FileSystemTools](docs/FileSystemTools.md)** - Read, write, and edit files with precise control
 - **[ShellTools](docs/ShellTools.md)** - Execute shell commands with timeout control, background process management, and regex output filtering
@@ -19,6 +19,8 @@ Spring AI Agent Utils reimplements core [Claude Code](https://code.claude.com/do
 - **[BraveWebSearchTool](docs/BraveWebSearchTool.md)** - Web search with domain filtering
 - **[SkillsTool](docs/SkillsTool.md)** - Extend AI agent capabilities with reusable, composable knowledge modules defined in Markdown with YAML front-matter
 - **[TaskTools](docs/TaskTools.md)** - Hierarchical autonomous sub-agent system for delegating complex tasks to specialized agents with dedicated context windows
+
+While these tools can be used standalone, truly agentic behavior emerges when they are combined. SkillsTool naturally pairs with FileSystemTools and ShellTools to execute domain-specific workflows. BraveWebSearchTool and SmartWebFetchTool provide your AI application with access to real-world information. TaskTools orchestrates complex operations by delegating to specialized sub-agents, each equipped with a tailored subset of these tools.
 
 
 ## Installation
@@ -44,22 +46,34 @@ _Check the latest version:_ [![](https://img.shields.io/maven-central/v/org.spri
 public class Application {
 
     @Bean
-    CommandLineRunner demo(ChatClient.Builder chatClientBuilder) {
+    CommandLineRunner demo(ChatClient.Builder chatClientBuilder,
+                          @Value("${BRAVE_API_KEY}") String braveApiKey) {
         return args -> {
+            // Configure Task tools for sub-agent delegation
+            var taskTools = TaskToolCallbackProvider.builder()
+                .agentDirectories(".claude/agents")
+                .skillsDirectories(".claude/skills")
+                .chatClientBuilder(chatClientBuilder)
+                .build();
+
             ChatClient chatClient = chatClientBuilder
-                // Load skills
+                // Register Task tools (sub-agents)
+                .defaultToolCallbacks(taskTools)
+
+                // Register Skills tool
                 .defaultToolCallbacks(SkillsTool.builder()
                     .addSkillsDirectory(".claude/skills")
                     .build())
 
-                // Register tools
-                .defaultTools(new ShellTools())
-                .defaultTools(new FileSystemTools())
-                .defaultTools(GrepTool.builder().build())
-                .defaultTools(GlobTool.builder().build())
-                .defaultTools(SmartWebFetchTool.builder(chatClient).build())
-                .defaultTools(BraveWebSearchTool.builder(apiKey).build())
-                .defaultTools(TodoWriteTool.builder().build())
+                // Register agentic tools
+                .defaultTools(
+                    FileSystemTools.builder().build(),
+                    ShellTools.builder().build(),
+                    GrepTool.builder().build(),
+                    GlobTool.builder().build(),
+                    SmartWebFetchTool.builder(chatClientBuilder.clone().build()).build(),
+                    BraveWebSearchTool.builder(braveApiKey).build(),
+                    TodoWriteTool.builder().build())
                 .build();
 
             String response = chatClient
@@ -70,6 +84,17 @@ public class Application {
     }
 }
 ```
+
+### Examples
+
+Three comprehensive examples demonstrate different use cases:
+
+- **[code-agent-demo](../examples/code-agent-demo)** - Full-featured AI coding assistant with interactive CLI, all tools, conversation memory, and multi-model support
+- **[skills-demo](../examples/skills-demo)** - Focused demonstration of the SkillsTool system with custom skill development and helper scripts
+- **[subagent-demo](../examples/subagent-demo)** - Demonstrates hierarchical sub-agent system with custom Spring AI expert sub-agent and TaskTools integration
+
+See the [Examples README](../examples/README.md) for detailed setup, configuration, and usage guide.
+
 
 ## Tool Details
 
@@ -303,28 +328,30 @@ Organize feedback by priority: Critical Issues, Warnings, Suggestions.
 **application.properties:**
 ```properties
 # Model selection (supports Anthropic, OpenAI, Google)
+
+# Anthropic Claude
 spring.ai.anthropic.api-key=${ANTHROPIC_API_KEY}
 spring.ai.anthropic.options.model=claude-sonnet-4-5-20250929
 
-# Web tools
+# or OpenAI 
+spring.ai.openai-sdk.api-key=${OPENAI_API_KEY}
+spring.ai.openai-sdk.chat.options.model=gpt-5-mini-2025-08-07
+spring.ai.openai-sdk.chat.options.temperature=1.0
+
+# or Google Gemini
+spring.ai.google.genai.project-id=${GOOGLE_CLOUD_PROJECT}
+spring.ai.google.genai.chat.options.model=gemini-3-pro-preview
+spring.ai.google.genai.location=global
+
+# Web tools (used by the BraveWebSearchTool )
 brave.api.key=${BRAVE_API_KEY}
 ```
-
-## Examples
-
-Three comprehensive examples demonstrate different use cases:
-
-- **[code-agent-demo](../examples/code-agent-demo)** - Full-featured AI coding assistant with interactive CLI, all tools, conversation memory, and multi-model support
-- **[skills-demo](../examples/skills-demo)** - Focused demonstration of the SkillsTool system with custom skill development and helper scripts
-- **[subagent-demo](../examples/subagent-demo)** - Demonstrates hierarchical sub-agent system with custom Spring AI expert sub-agent and TaskTools integration
-
-See the [Examples README](../examples/README.md) for detailed setup, configuration, and usage guide.
 
 ## Requirements
 
 - Java 17+
 - Spring Boot 3.x / 4.x
-- Spring AI 2.0.0+
+- Spring AI 2.0.0-SNAPSHOT (> M1)
 
 ## License
 

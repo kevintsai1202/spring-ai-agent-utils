@@ -5,7 +5,7 @@
 [![Java Version](https://img.shields.io/badge/Java-17%2B-orange)](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
 
 
-A Spring AI library that brings [Claude Code](https://code.claude.com)-inspired tools and agent skills to your AI applications.
+A [Spring AI](https://docs.spring.io/spring-ai/reference/2.0-SNAPSHOT/index.html) library that brings [Claude Code](https://code.claude.com)-inspired tools and agent skills to your AI applications.
 
 ## Overview
 
@@ -26,9 +26,9 @@ spring-ai-agent-utils/
     └── ai-tuto/               # AI tutor skill example
 ```
 
-## Features
+## Agentic Utils
 
-### Agentic Tools
+These are the core tools needed to implement any agentic behavior:
 
 - **[FileSystemTools](spring-ai-agent-utils/docs/FileSystemTools.md)** - Read, write, and edit files with precise control
 - **[ShellTools](spring-ai-agent-utils/docs/ShellTools.md)** - Execute shell commands with timeout control, background process management, and regex output filtering
@@ -40,7 +40,9 @@ spring-ai-agent-utils/
 - **[SkillsTool](spring-ai-agent-utils/docs/SkillsTool.md)** - Extend AI agent capabilities with reusable, composable knowledge modules defined in Markdown with YAML front-matter
 - **[TaskTools](spring-ai-agent-utils/docs/TaskTools.md)** - Hierarchical autonomous sub-agent system for delegating complex tasks to specialized agents with dedicated context windows
 
-For detailed documentation, see:
+While these tools can be used standalone, truly agentic behavior emerges when they are combined. SkillsTool naturally pairs with FileSystemTools and ShellTools to execute domain-specific workflows. BraveWebSearchTool and SmartWebFetchTool provide your AI application with access to real-world information. TaskTools orchestrates complex operations by delegating to specialized sub-agents, each equipped with a tailored subset of these tools.
+
+### Detailed documentation
 
 - **[Agent Utils Library Documentation](spring-ai-agent-utils/README.md)** - Complete API reference, tool capabilities, and skills development guide
 - **[Example Applications](#examples)** - Working demos showcasing different use cases
