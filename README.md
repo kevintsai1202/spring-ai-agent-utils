@@ -48,9 +48,12 @@ spring-ai-agent-utils/
 <dependency>
     <groupId>org.springaicommunity</groupId>
     <artifactId>spring-ai-agent-utils</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.1</version>
 </dependency>
 ```
+_Check the latest version:_ [![](https://img.shields.io/maven-central/v/org.springaicommunity/spring-ai-agent-utils.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/org.springaicommunity/spring-ai-agent-utils)
+
+> **Note:** You need Sping-AI version `2.0.0-SNAPSHOT` or `2.0.0-M2` when released.
 
 **2. Configure your agent:**
 
@@ -118,7 +121,7 @@ This project reimplements key Claude Code features based on:
 
 - Java 17+
 - Spring Boot 3.x / 4.x
-- Spring AI 2.0.0+
+- Spring AI 2.0.0-SNAPSHOT (or 2.0.0-M2 when released)
 - Maven 3.6+
 
 ## Building

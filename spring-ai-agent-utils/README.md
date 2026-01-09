@@ -27,9 +27,14 @@ Spring AI Agent Utils reimplements core [Claude Code](https://code.claude.com/do
 <dependency>
     <groupId>org.springaicommunity</groupId>
     <artifactId>spring-ai-agent-utils</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.1</version>
 </dependency>
 ```
+
+_Check the latest version:_ [![](https://img.shields.io/maven-central/v/org.springaicommunity/spring-ai-agent-utils.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/org.springaicommunity/spring-ai-agent-utils)
+
+> **Note:** You need Sping-AI version `2.0.0-SNAPSHOT` or `2.0.0-M2` when released.
+
 
 ## Quick Start
 
