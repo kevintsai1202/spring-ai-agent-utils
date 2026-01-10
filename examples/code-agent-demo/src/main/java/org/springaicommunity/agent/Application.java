@@ -3,7 +3,6 @@ package org.springaicommunity.agent;
 import java.util.List;
 import java.util.Scanner;
 
-import com.google.genai.types.Environment;
 import org.springaicommunity.agent.tools.BraveWebSearchTool;
 import org.springaicommunity.agent.tools.FileSystemTools;
 import org.springaicommunity.agent.tools.GrepTool;

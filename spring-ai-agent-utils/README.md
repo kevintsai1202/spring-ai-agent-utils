@@ -48,34 +48,54 @@ _Check the latest version:_ [![](https://img.shields.io/maven-central/v/org.spri
 public class Application {
 
     @Bean
-    CommandLineRunner demo(ChatClient.Builder chatClientBuilder,
-                          @Value("${BRAVE_API_KEY}") String braveApiKey) {
+    CommandLineRunner demo(ChatClient.Builder chatClientBuilder, 
+        @Value("${BRAVE_API_KEY}") String braveApiKey,
+        @Value("classpath:/prompt/MAIN_AGENT_SYSTEM_PROMPT_V2.md") Resource agentSystemPrompt) {
+        
         return args -> {
-            // Configure Task tools for sub-agent delegation
-            var taskTools = TaskToolCallbackProvider.builder()
-                .agentDirectories(".claude/agents")
-                .skillsDirectories(".claude/skills")
-                .chatClientBuilder(chatClientBuilder)
-                .build();
-
             ChatClient chatClient = chatClientBuilder
-                // Register Task tools (sub-agents)
-                .defaultToolCallbacks(taskTools)
+                // Main agent prompt
+				.defaultSystem(p -> p.text(agentSystemPrompt) // system prompt
+					.param(AgentEnvironment.ENVIRONMENT_INFO_KEY, AgentEnvironment.info())
+					.param(AgentEnvironment.GIT_STATUS_KEY, AgentEnvironment.gitStatus())
+					.param(AgentEnvironment.AGENT_MODEL_KEY, "claude-sonnet-4-5-20250929")
+					.param(AgentEnvironment.AGENT_MODEL_KNOWLEDGE_CUTOFF_KEY, "2025-01-01"))
+                
 
-                // Register Skills tool
+                // Sub-Agents
+                .defaultToolCallbacks(TaskToolCallbackProvider.builder()
+                    .agentDirectories(".claude/agents")
+                    .skillsDirectories(".claude/skills")
+                    .chatClientBuilder(chatClientBuilder.clone().defaultToolContext(Map.of("foo", "bar")))
+                    .build())
+
+                // Skills
                 .defaultToolCallbacks(SkillsTool.builder()
                     .addSkillsDirectory(".claude/skills")
                     .build())
 
-                // Register agentic tools
+                // Core Tools
                 .defaultTools(
-                    FileSystemTools.builder().build(),
                     ShellTools.builder().build(),
+                    FileSystemTools.builder().build(),
                     GrepTool.builder().build(),
                     GlobTool.builder().build(),
-                    SmartWebFetchTool.builder(chatClientBuilder.clone().build()).build(),
-                    BraveWebSearchTool.builder(braveApiKey).build(),
-                    TodoWriteTool.builder().build())
+                    SmartWebFetchTool.builder(chatClient).build(),
+                    BraveWebSearchTool.builder(braveApiKey).build())
+
+                // Task orchestration
+                .defaultTools(TodoWriteTool.builder().build())
+
+                // User feedback tool
+                .defaultTools(AskUserQuestionTool.builder()
+                    .questionAnswerFunction(questions -> handleUserQuestions(questions))
+                    .build())
+
+				// Advisors
+				.defaultAdvisors(
+					ToolCallAdvisor.builder().conversationHistoryEnabled(false).build(), // Tool Calling
+					MessageChatMemoryAdvisor.builder(MessageWindowChatMemory.builder().maxMessages(500).build()).build()) // Memory
+
                 .build();
 
             String response = chatClient
