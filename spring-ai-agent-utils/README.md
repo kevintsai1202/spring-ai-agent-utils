@@ -4,7 +4,7 @@ A Spring AI library that brings Claude Code-inspired tools and skills to your AI
 
 ## Overview
 
-[Spring AI](https://docs.spring.io/spring-ai/reference/2.0-SNAPSHOT/index.html) Agent Utils reimplements core [Claude Code](https://code.claude.com/docs/en/overview) capabilities as Spring AI tools, enabling sophisticated agentic workflows with file operations, shell execution, web access, task management, and extensible skills.
+[Spring AI](https://docs.spring.io/spring-ai/reference/2.0-SNAPSHOT/index.html) Agent Utils reimplements core [Claude Code](https://code.claude.com/docs/en/settings#tools-available-to-claude) capabilities as Spring AI tools, enabling sophisticated agentic workflows with file operations, shell execution, web access, task management, and extensible skills.
 
 ## Agentic Utils
 
@@ -466,16 +466,13 @@ brave.api.key=${BRAVE_API_KEY}
 
 Apache License 2.0
 
-## Credits
-
-Inspired by [Claude Code](https://code.claude.com) by Anthropic. Architecture insights from:
-- [Claude Code Documentation](https://code.claude.com/docs/en/overview)
-- [Claude Code Agent Skills](https://code.claude.com/docs/en/skills#agent-skills)
-- [Claude Code Internals](https://agiflow.io/blog/claude-code-internals-reverse-engineering-prompt-augmentation/)
-- [Claude Code Skills](https://mikhail.io/2025/10/claude-code-skills/)
-
 ## Links
 
 - [GitHub Repository](https://github.com/spring-ai-community/spring-ai-agent-utils)
 - [Issue Tracker](https://github.com/spring-ai-community/spring-ai-agent-utils/issues)
 - [Spring AI Documentation](https://docs.spring.io/spring-ai/reference/)
+- Architecture insights:
+    - [Claude Code Documentation](https://code.claude.com/docs/en/overview)
+    - [Claude Code Agent Skills](https://code.claude.com/docs/en/skills#agent-skills)
+    - [Claude Code Internals](https://agiflow.io/blog/claude-code-internals-reverse-engineering-prompt-augmentation/)
+    - [Claude Code Skills](https://mikhail.io/2025/10/claude-code-skills/)
