@@ -8,6 +8,7 @@ import org.springaicommunity.agent.tools.ShellTools;
 import org.springaicommunity.agent.tools.SkillsTool;
 import org.springaicommunity.agent.tools.SmartWebFetchTool;
 import org.springaicommunity.agent.tools.TodoWriteTool;
+import org.springaicommunity.agent.utils.AgentEnvironment;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.ToolCallAdvisor;
@@ -21,7 +22,13 @@ import org.springframework.core.io.Resource;
 @SpringBootApplication
 public class Application {
 
-	@Value("classpath:/CODE_AGENT_PROMPT_V2.md")
+	@Value("${agent.model:Unknown}")
+	String agentModel;
+
+	@Value("${agent.model.knowledge.cutoff:Unknown}")
+	String agentModelKnowledgeCutoff;
+
+	@Value("classpath:/prompt/MAIN_AGENT_SYSTEM_PROMPT_V2.md")
 	Resource systemPrompt;
 
 	public static void main(String[] args) {
@@ -43,7 +50,12 @@ public class Application {
 		return args -> {
 
 			ChatClient chatClient = chatClientBuilder // @formatter:off
-				.defaultSystem(systemPrompt)
+				.defaultSystem(p -> p.text(systemPrompt) // system prompt
+					.param(AgentEnvironment.ENVIRONMENT_INFO_KEY, AgentEnvironment.info())
+					.param(AgentEnvironment.GIT_STATUS_KEY, AgentEnvironment.gitStatus())
+					.param(AgentEnvironment.AGENT_MODEL_KEY, agentModel)
+					.param(AgentEnvironment.AGENT_MODEL_KNOWLEDGE_CUTOFF_KEY, agentModelKnowledgeCutoff))
+
 				.defaultToolCallbacks(SkillsTool.builder().addSkillsDirectory(skillsDir).build()) // skills tool
 				.defaultTools(ShellTools.builder().build())// built-in shell tools
 				.defaultTools(FileSystemTools.builder().build())// built-in file system tools
