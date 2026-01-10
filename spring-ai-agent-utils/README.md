@@ -129,9 +129,67 @@ Three comprehensive examples demonstrate different use cases:
 See the [Examples README](../examples/README.md) for detailed setup, configuration, and usage guide.
 
 
-## Tool Details
+## Agent Tool Details
 
-### FileSystemTools
+### Core Tools
+
+#### AgentEnvironment - Dynamic Agent Context
+
+Provide AI agents with runtime environment information and git repository context through dynamic system prompt parameters. Makes agents context-aware by injecting environment metadata and git status into system prompts.
+
+[**View Full Documentation →**](docs/AgentEnvironment.md)
+
+**Quick Example:**
+```java
+import org.springaicommunity.agent.utils.AgentEnvironment;
+
+@Value("${agent.model:Unknown}")
+String agentModel;
+
+@Value("${agent.model.knowledge.cutoff:Unknown}")
+String agentModelKnowledgeCutoff;
+
+@Value("classpath:/prompt/MAIN_AGENT_SYSTEM_PROMPT_V2.md")
+Resource systemPrompt;
+
+// Configure ChatClient with dynamic environment context
+ChatClient chatClient = chatClientBuilder
+    .defaultSystem(p -> p.text(systemPrompt)
+        .param(AgentEnvironment.ENVIRONMENT_INFO_KEY, AgentEnvironment.info())
+        .param(AgentEnvironment.GIT_STATUS_KEY, AgentEnvironment.gitStatus())
+        .param(AgentEnvironment.AGENT_MODEL_KEY, agentModel)
+        .param(AgentEnvironment.AGENT_MODEL_KNOWLEDGE_CUTOFF_KEY, agentModelKnowledgeCutoff))
+    .defaultTools(/* your tools */)
+    .build();
+```
+
+**System Prompt Template:** `src/main/resources/prompt/MAIN_AGENT_SYSTEM_PROMPT_V2.md`
+```markdown
+Here is useful information about the environment you are running in:
+<env>
+{ENVIRONMENT_INFO}
+</env>
+You are powered by the model: {AGENT_MODEL}
+
+Assistant knowledge cutoff is {AGENT_MODEL_KNOWLEDGE_CUTOFF}.
+
+{GIT_STATUS}
+```
+
+**Application Properties:**
+```properties
+# AGENT CONFIGURATION
+agent.model=claude-sonnet-4-5-20250929
+agent.model.knowledge.cutoff=2025-09-29
+```
+
+**Benefits:**
+- Agents understand their runtime environment (OS, working directory, date)
+- Git-aware agents know current branch, uncommitted changes, recent commits
+- Model-specific prompts with accurate knowledge cutoff dates
+- Easy multi-model support through configuration
+
+#### FileSystemTools
 
 Read, write, and edit files with precise control. Provides three core operations: Read for reading files with pagination, Write for creating/overwriting files, and Edit for precise string replacement with safety checks.
 
@@ -148,7 +206,7 @@ String content = fileTools.read("/path/to/file.txt", null, null, toolContext);
 fileTools.edit(filePath, "oldValue", "newValue", null, toolContext);
 ```
 
-### ShellTools
+#### ShellTools
 
 Execute shell commands with background process support. Includes Bash for command execution with optional timeout and background mode, BashOutput for monitoring background processes with regex filtering, and KillShell for graceful process termination.
 
@@ -169,7 +227,7 @@ String output = shellTools.bashOutput("shell_1234567890", null);
 String killResult = shellTools.killShell("shell_1234567890");
 ```
 
-### GrepTool
+#### GrepTool
 
 Pure Java grep implementation for code search with regex, glob filtering, and multiple output modes. No external ripgrep dependency required.
 
@@ -184,7 +242,7 @@ String result = grepTool.grep("public class.*", "./src", null,
     OutputMode.files_with_matches, null, null, null, null, null, "java", null, null, null);
 ```
 
-### GlobTool
+#### GlobTool
 
 Fast file pattern matching tool for finding files by name patterns. Uses pure Java implementation with glob syntax support, sorted by modification time.
 
@@ -201,7 +259,7 @@ String files = globTool.glob("**/*.java", "./src");
 String components = globTool.glob("**/*Component.tsx", "./src");
 ```
 
-### SmartWebFetchTool
+#### SmartWebFetchTool
 
 AI-powered web content fetching and summarization tool with intelligent caching and safety features. Fetches web pages, converts HTML to Markdown, and uses AI to extract relevant information based on a user prompt.
 
@@ -223,47 +281,7 @@ String result = webFetch.webFetch(
 );
 ```
 
-### TodoWriteTool
-
-Structured task list management for AI coding sessions. Helps AI agents track progress, organize complex tasks, and provide visibility into task execution.
-
-[**View Full Documentation →**](docs/TodoWriteTool.md)
-
-**Quick Example:**
-```java
-TodoWriteTool todoTool = TodoWriteTool.builder().build();
-
-// Create and manage task list
-Todos todos = new Todos(List.of(
-    new TodoItem("Read configuration", Status.completed, "Reading configuration"),
-    new TodoItem("Parse settings", Status.in_progress, "Parsing settings"),
-    new TodoItem("Validate config", Status.pending, "Validating config")
-));
-
-todoTool.todoWrite(todos);
-```
-
-### AskUserQuestionTool
-
-Ask users clarifying questions during AI agent execution. Enables agents to gather user preferences, clarify ambiguous requirements, and get decisions on implementation choices with multiple-choice or free-text input.
-
-[**View Full Documentation →**](docs/AskUserQuestionTool.md)
-
-**Quick Example:**
-```java
-AskUserQuestionTool askTool = AskUserQuestionTool.builder()
-    .questionAnswerFunction(questions -> {
-        // Display questions to user via your UI
-        Map<String, String> answers = collectUserAnswers(questions);
-        return answers;
-    })
-    .build();
-
-// AI agent will automatically call this tool when it needs clarification
-// Example: "Which framework should we use?" with options like React, Vue, Angular
-```
-
-### BraveWebSearchTool
+#### BraveWebSearchTool
 
 Web search capabilities using the Brave Search API. Provides up-to-date information from the web with optional domain filtering.
 
@@ -287,7 +305,31 @@ String results = searchTool.webSearch(
 String results2 = searchTool.webSearch("Spring AI site:spring.io", null, null);
 ```
 
-### SkillsTool - Agent Skills System
+### User feedback
+
+#### AskUserQuestionTool
+
+Ask users clarifying questions during AI agent execution. Enables agents to gather user preferences, clarify ambiguous requirements, and get decisions on implementation choices with multiple-choice or free-text input.
+
+[**View Full Documentation →**](docs/AskUserQuestionTool.md)
+
+**Quick Example:**
+```java
+AskUserQuestionTool askTool = AskUserQuestionTool.builder()
+    .questionAnswerFunction(questions -> {
+        // Display questions to user via your UI
+        Map<String, String> answers = collectUserAnswers(questions);
+        return answers;
+    })
+    .build();
+
+// AI agent will automatically call this tool when it needs clarification
+// Example: "Which framework should we use?" with options like React, Vue, Angular
+```
+
+### Agent Skills
+
+#### SkillsTool
 
 Extend AI agent capabilities with reusable, composable knowledge modules defined in Markdown with YAML front-matter. Based on [Claude Code's Agent Skills](https://code.claude.com/docs/en/skills#agent-skills), skills enable specialized task handling through semantic matching.
 
@@ -316,7 +358,29 @@ description: What this skill does and when to use it. Include trigger keywords.
 Instructions for the AI agent to follow...
 ```
 
-### TaskTools - Hierarchical Sub-Agent System
+### Task Orchestration & Multi-Agents
+
+#### TodoWriteTool
+
+Structured task list management for AI coding sessions. Helps AI agents track progress, organize complex tasks, and provide visibility into task execution.
+
+[**View Full Documentation →**](docs/TodoWriteTool.md)
+
+**Quick Example:**
+```java
+TodoWriteTool todoTool = TodoWriteTool.builder().build();
+
+// Create and manage task list
+Todos todos = new Todos(List.of(
+    new TodoItem("Read configuration", Status.completed, "Reading configuration"),
+    new TodoItem("Parse settings", Status.in_progress, "Parsing settings"),
+    new TodoItem("Validate config", Status.pending, "Validating config")
+));
+
+todoTool.todoWrite(todos);
+```
+
+#### TaskTools - Hierarchical Sub-Agent System
 
 Enable your AI agent to delegate complex, multi-step tasks to specialized sub-agents with dedicated context windows. Based on [Claude Code's sub-agents](https://code.claude.com/docs/en/sub-agents), this system provides autonomous task execution with specialized expertise.
 
@@ -376,61 +440,6 @@ Organize feedback by priority: Critical Issues, Warnings, Suggestions.
 - **Background Execution** - Run long-running tasks asynchronously with TaskOutputTool
 - **Resumable Agents** - Continue long-running research across multiple interactions
 
-### AgentEnvironment - Dynamic Agent Context
-
-Provide AI agents with runtime environment information and git repository context through dynamic system prompt parameters. Makes agents context-aware by injecting environment metadata and git status into system prompts.
-
-[**View Full Documentation →**](docs/AgentEnvironment.md)
-
-**Quick Example:**
-```java
-import org.springaicommunity.agent.utils.AgentEnvironment;
-
-@Value("${agent.model:Unknown}")
-String agentModel;
-
-@Value("${agent.model.knowledge.cutoff:Unknown}")
-String agentModelKnowledgeCutoff;
-
-@Value("classpath:/prompt/MAIN_AGENT_SYSTEM_PROMPT_V2.md")
-Resource systemPrompt;
-
-// Configure ChatClient with dynamic environment context
-ChatClient chatClient = chatClientBuilder
-    .defaultSystem(p -> p.text(systemPrompt)
-        .param(AgentEnvironment.ENVIRONMENT_INFO_KEY, AgentEnvironment.info())
-        .param(AgentEnvironment.GIT_STATUS_KEY, AgentEnvironment.gitStatus())
-        .param(AgentEnvironment.AGENT_MODEL_KEY, agentModel)
-        .param(AgentEnvironment.AGENT_MODEL_KNOWLEDGE_CUTOFF_KEY, agentModelKnowledgeCutoff))
-    .defaultTools(/* your tools */)
-    .build();
-```
-
-**System Prompt Template:** `src/main/resources/prompt/MAIN_AGENT_SYSTEM_PROMPT_V2.md`
-```markdown
-Here is useful information about the environment you are running in:
-<env>
-{ENVIRONMENT_INFO}
-</env>
-You are powered by the model: {AGENT_MODEL}
-
-Assistant knowledge cutoff is {AGENT_MODEL_KNOWLEDGE_CUTOFF}.
-
-{GIT_STATUS}
-```
-
-**Application Properties:**
-```properties
-# AGENT CONFIGURATION
-agent.model=claude-sonnet-4-5-20250929
-agent.model.knowledge.cutoff=2025-09-29
-```
-
-**Benefits:**
-- Agents understand their runtime environment (OS, working directory, date)
-- Git-aware agents know current branch, uncommitted changes, recent commits
-- Model-specific prompts with accurate knowledge cutoff dates
-- Easy multi-model support through configuration
 
 ## Configuration
 
