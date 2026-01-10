@@ -13,6 +13,7 @@ import org.springaicommunity.agent.tools.SkillsTool;
 import org.springaicommunity.agent.tools.SmartWebFetchTool;
 import org.springaicommunity.agent.tools.TodoWriteTool;
 import org.springaicommunity.agent.tools.task.TaskToolCallbackProvider;
+import org.springaicommunity.agent.utils.AgentEnvironment;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
@@ -29,10 +30,16 @@ import org.springframework.core.io.Resource;
 @SpringBootApplication
 public class Application {
 
-	@Value("${app.agent.skills.paths}")
+	@Value("${agent.model:Unknown}")
+	String agentModel;
+
+	@Value("${agent.model.knowledge.cutoff:Unknown}")
+	String agentModelKnowledgeCutoff;
+
+	@Value("${agent.skills.paths}")
 	List<String> skillPaths;
 
-	@Value("classpath:/prompt/CODE_AGENT_PROMPT_V2.md")
+	@Value("classpath:/prompt/MAIN_AGENT_SYSTEM_PROMPT_V2.md")
 	Resource systemPrompt;
 
 	@Value("${BRAVE_API_KEY:#{null}}")
@@ -57,28 +64,46 @@ public class Application {
 				.build();
 
 			ChatClient chatClient = chatClientBuilder // @formatter:off
-				.defaultSystem(systemPrompt)			
+				// system prompt
+				.defaultSystem(p -> p.text(systemPrompt) // system prompt
+					.param(AgentEnvironment.ENVIRONMENT_INFO_KEY, AgentEnvironment.info())
+					.param(AgentEnvironment.GIT_STATUS_KEY, AgentEnvironment.gitStatus())
+					.param(AgentEnvironment.AGENT_MODEL_KEY, agentModel)
+					.param(AgentEnvironment.AGENT_MODEL_KNOWLEDGE_CUTOFF_KEY, agentModelKnowledgeCutoff))
+
+				// sub-agent task tool callbacks
 				.defaultToolCallbacks(taskTools)
-				.defaultToolContext(Map.of("foo", "bar"))
 
-				.defaultToolCallbacks(SkillsTool.builder().addSkillsDirectories(skillPaths).build()) // skills tool
-				.defaultTools( // Common agentic tools
-					GlobTool.builder().build(),
-					ShellTools.builder().build(), // needed by the skills to execute scripts
-					FileSystemTools.builder().build(),// needed by the skills to read/write additional resources
-					SmartWebFetchTool.builder(chatClientBuilder.clone().build()).build(),
-					BraveWebSearchTool.builder(braveApiKey).resultCount(15).build(),
+				// skills tool
+				.defaultToolCallbacks(SkillsTool.builder().addSkillsDirectories(skillPaths).build())
+
+				
+				.defaultTools(
+					// task orchestration tools
 					TodoWriteTool.builder().build(),
-					GrepTool.builder().build())
 
+					// common agentic tools
+					GlobTool.builder().build(),
+					GrepTool.builder().build(),
+					ShellTools.builder().build(),
+					FileSystemTools.builder().build(),
+
+					SmartWebFetchTool.builder(chatClientBuilder.clone().build()).build(),
+					BraveWebSearchTool.builder(braveApiKey).resultCount(15).build())
+
+				// Advisors
 				.defaultAdvisors(
 					ToolCallAdvisor.builder()
 						.conversationHistoryEnabled(false)
 						.build(), // tool calling advisor
+
 					MessageChatMemoryAdvisor.builder(MessageWindowChatMemory.builder().maxMessages(500).build())
 						.order(Ordered.HIGHEST_PRECEDENCE + 1000)
 						.build(),
+
 					new MyLoggingAdvisor()) // logging advisor
+
+				.defaultToolContext(Map.of("foo", "bar"))
 				.build();
 				// @formatter:on
 

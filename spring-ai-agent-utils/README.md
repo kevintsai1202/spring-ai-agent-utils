@@ -20,6 +20,7 @@ These are the core tools needed to implement any agentic behavior:
 - **[BraveWebSearchTool](docs/BraveWebSearchTool.md)** - Web search with domain filtering
 - **[SkillsTool](docs/SkillsTool.md)** - Extend AI agent capabilities with reusable, composable knowledge modules defined in Markdown with YAML front-matter
 - **[TaskTools](docs/TaskTools.md)** - Hierarchical autonomous sub-agent system for delegating complex tasks to specialized agents with dedicated context windows
+- **[AgentEnvironment](docs/AgentEnvironment.md)** - Dynamic agent context utility that provides runtime environment information and git repository status to system prompts
 
 While these tools can be used standalone, truly agentic behavior emerges when they are combined. SkillsTool naturally pairs with FileSystemTools and ShellTools to execute domain-specific workflows. BraveWebSearchTool and SmartWebFetchTool provide your AI application with access to real-world information. TaskTools orchestrates complex operations by delegating to specialized sub-agents, each equipped with a tailored subset of these tools.
 
@@ -343,6 +344,62 @@ Organize feedback by priority: Critical Issues, Warnings, Suggestions.
 - **Tool Filtering** - Limit sub-agents to only necessary tools
 - **Background Execution** - Run long-running tasks asynchronously with TaskOutputTool
 - **Resumable Agents** - Continue long-running research across multiple interactions
+
+### AgentEnvironment - Dynamic Agent Context
+
+Provide AI agents with runtime environment information and git repository context through dynamic system prompt parameters. Makes agents context-aware by injecting environment metadata and git status into system prompts.
+
+[**View Full Documentation →**](docs/AgentEnvironment.md)
+
+**Quick Example:**
+```java
+import org.springaicommunity.agent.utils.AgentEnvironment;
+
+@Value("${agent.model:Unknown}")
+String agentModel;
+
+@Value("${agent.model.knowledge.cutoff:Unknown}")
+String agentModelKnowledgeCutoff;
+
+@Value("classpath:/prompt/MAIN_AGENT_SYSTEM_PROMPT_V2.md")
+Resource systemPrompt;
+
+// Configure ChatClient with dynamic environment context
+ChatClient chatClient = chatClientBuilder
+    .defaultSystem(p -> p.text(systemPrompt)
+        .param(AgentEnvironment.ENVIRONMENT_INFO_KEY, AgentEnvironment.info())
+        .param(AgentEnvironment.GIT_STATUS_KEY, AgentEnvironment.gitStatus())
+        .param(AgentEnvironment.AGENT_MODEL_KEY, agentModel)
+        .param(AgentEnvironment.AGENT_MODEL_KNOWLEDGE_CUTOFF_KEY, agentModelKnowledgeCutoff))
+    .defaultTools(/* your tools */)
+    .build();
+```
+
+**System Prompt Template:** `src/main/resources/prompt/MAIN_AGENT_SYSTEM_PROMPT_V2.md`
+```markdown
+Here is useful information about the environment you are running in:
+<env>
+{ENVIRONMENT_INFO}
+</env>
+You are powered by the model: {AGENT_MODEL}
+
+Assistant knowledge cutoff is {AGENT_MODEL_KNOWLEDGE_CUTOFF}.
+
+{GIT_STATUS}
+```
+
+**Application Properties:**
+```properties
+# AGENT CONFIGURATION
+agent.model=claude-sonnet-4-5-20250929
+agent.model.knowledge.cutoff=2025-09-29
+```
+
+**Benefits:**
+- Agents understand their runtime environment (OS, working directory, date)
+- Git-aware agents know current branch, uncommitted changes, recent commits
+- Model-specific prompts with accurate knowledge cutoff dates
+- Easy multi-model support through configuration
 
 ## Configuration
 

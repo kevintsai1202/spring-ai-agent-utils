@@ -3,6 +3,7 @@ package org.springaicommunity.agent;
 import java.util.List;
 import java.util.Scanner;
 
+import com.google.genai.types.Environment;
 import org.springaicommunity.agent.tools.BraveWebSearchTool;
 import org.springaicommunity.agent.tools.FileSystemTools;
 import org.springaicommunity.agent.tools.GrepTool;
@@ -10,6 +11,7 @@ import org.springaicommunity.agent.tools.ShellTools;
 import org.springaicommunity.agent.tools.SkillsTool;
 import org.springaicommunity.agent.tools.SmartWebFetchTool;
 import org.springaicommunity.agent.tools.TodoWriteTool;
+import org.springaicommunity.agent.utils.AgentEnvironment;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
@@ -26,14 +28,21 @@ import org.springframework.core.io.Resource;
 @SpringBootApplication
 public class Application {
 
-	@Value("${app.agent.skills.paths}")
+	@Value("${agent.skills.paths}")
 	List<String> skillPaths;
 
-	@Value("classpath:/prompt/CODE_AGENT_PROMPT_V2.md")
+	@Value("${agent.model:Unknown}")
+	String agentModel;
+
+	@Value("${agent.model.knowledge.cutoff:Unknown}")
+	String agentModelKnowledgeCutoff;
+
+	@Value("classpath:/prompt/MAIN_AGENT_SYSTEM_PROMPT_V2.md")
 	Resource systemPrompt;
 
 	@Value("${BRAVE_API_KEY:#{null}}")
 	String braveApiKey;
+
 
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
@@ -43,9 +52,14 @@ public class Application {
 	CommandLineRunner commandLineRunner(ChatClient.Builder chatClientBuilder) {
 
 		return args -> {
+			// @formatter:off
+			ChatClient chatClient = chatClientBuilder 
+				.defaultSystem(p -> p.text(systemPrompt) // system prompt
+					.param(AgentEnvironment.ENVIRONMENT_INFO_KEY, AgentEnvironment.info())
+					.param(AgentEnvironment.GIT_STATUS_KEY, AgentEnvironment.gitStatus())
+					.param(AgentEnvironment.AGENT_MODEL_KEY, agentModel)
+					.param(AgentEnvironment.AGENT_MODEL_KNOWLEDGE_CUTOFF_KEY, agentModelKnowledgeCutoff))
 
-			ChatClient chatClient = chatClientBuilder // @formatter:off
-				.defaultSystem(systemPrompt)
 				.defaultToolCallbacks(SkillsTool.builder().addSkillsDirectories(skillPaths).build()) // skills tool
 				.defaultTools( // Common agentic tools
 					ShellTools.builder().build(), // needed by the skills to execute scripts
@@ -55,6 +69,7 @@ public class Application {
 					TodoWriteTool.builder().build(),
 					GrepTool.builder().build())
 
+				// Advisors
 				.defaultAdvisors(
 					ToolCallAdvisor.builder()
 						.conversationHistoryEnabled(false)
