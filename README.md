@@ -17,13 +17,14 @@ This project demonstrates how to reverse-engineer and reimplement Claude Code's 
 
 ```
 spring-ai-agent-utils/
-├── spring-ai-agent-utils/     # Core library
-│   └── README.md              # Detailed documentation
-├── examples/
-│   ├── code-agent-demo/       # Full-featured AI coding assistant
-│   └── skills-demo/           # Focused skills system demo
-└── .claude/skills/            # Example agent skills
-    └── ai-tuto/               # AI tutor skill example
+├── spring-ai-agent-utils/          # Agent Utils Core library
+│   ├── docs/                       # Agent Tool documentation
+│   └── README.md                   # Detailed library documentation
+│
+└── examples/
+    ├── code-agent-demo/            # Full-featured AI coding assistant
+    ├── skills-demo/                # Focused skills system demo
+    └── subagent-demo/              # Hierarchical sub-agent example
 ```
 
 ## Agentic Utils
