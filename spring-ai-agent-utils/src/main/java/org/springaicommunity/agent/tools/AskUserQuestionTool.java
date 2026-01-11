@@ -40,6 +40,17 @@ import org.springframework.util.Assert;
  * {@code questionAnswerFunction} being thread-safe. If the function maintains mutable
  * shared state, the caller must ensure proper synchronization.
  *
+ * <p>
+ *
+ * Note on Exception Handling:
+ * The tool validates the answers returned by the {@code questionAnswerFunction}. If the
+ * answers are invalid (e.g., missing answers for questions, null values), an
+ * {@link InvalidUserAnswerException} is thrown. This exception indicates that the user
+ * provided invalid input. Such exceptions are typically raised after validating the answers
+ * map and have to be propagated to the user, not the AI agent.
+ * <code>spring.ai.tools.throw-exception-on-error=org.springaicommunity.agent.tools.AskUserQuestionTool$InvalidUserAnswerException</code>
+ * has to be set for this behavior.
+ *
  * @author Christian Tzolov
  * @see <a href=
  * "https://platform.claude.com/docs/en/agent-sdk/user-input#question-format"> Claude
@@ -53,8 +64,8 @@ public class AskUserQuestionTool {
 	 * Function that handles the user question workflow.
 	 *
 	 * <p>
-	 * When invoked, this function receives a list of {@link Question} objects that the
-	 * AI agent wants to ask the user.
+	 * When invoked, this function receives a list of {@link Question} objects that the AI
+	 * agent wants to ask the user.
 	 *
 	 * <p>
 	 * The function should:
@@ -189,14 +200,17 @@ public class AskUserQuestionTool {
 					required = false) Map<String, String> answers) {
 
 		// Validate the questions list
-		validateQuestions(questions);
+		this.validateQuestions(questions);
 
 		logger.debug("Asking user {} question(s)", questions.size());
 		if (logger.isTraceEnabled()) {
 			questions.forEach(q -> logger.trace("Question: {}", q.question()));
 		}
 
-		Map<String, String> result = this.questionAnswerFunction.apply(questions);		
+		Map<String, String> result = this.questionAnswerFunction.apply(questions);
+
+		// Validate the answer map
+		this.validateAnswers(questions, result);
 
 		if (logger.isDebugEnabled() && result != null) {
 			logger.debug("Received {} answer(s) from user", result.size());
@@ -227,6 +241,67 @@ public class AskUserQuestionTool {
 				throw new IllegalArgumentException("Question at index " + i + " is null");
 			}
 		}
+	}
+
+	/**
+	 * Validates the answers map returned by the questionAnswerFunction according to the
+	 * following rules: - Answers map must not be null - Map keys should match the
+	 * question text from each Question object - All questions must have corresponding
+	 * answers - Answer values should not be null
+	 * @param questions the original questions asked
+	 * @param answers the answers map returned by the questionAnswerFunction
+	 * @throws IllegalStateException if validation fails
+	 */
+	private void validateAnswers(List<Question> questions, Map<String, String> answers) {
+		// Validate that the map is not null
+		if (answers == null) {
+			throw new InvalidUserAnswerException(
+					"questionAnswerFunction returned null. Must return a non-null Map<String, String>");
+		}
+
+		// Validate that all questions have answers
+		for (Question question : questions) {
+			String questionText = question.question();
+
+			if (!answers.containsKey(questionText)) {
+				throw new InvalidUserAnswerException(
+						"Missing answer for question: \"" + questionText + "\". All questions must have answers.");
+			}
+
+			String answerValue = answers.get(questionText);
+			if (answerValue == null) {
+				throw new InvalidUserAnswerException("Answer for question \"" + questionText
+						+ "\" is null. Answer values should not be null (empty strings are acceptable).");
+			}
+		}
+
+		// Log a warning if there are extra keys in the answer map that don't match any
+		// questions
+		if (answers.size() > questions.size()) {
+			for (String answerKey : answers.keySet()) {
+				boolean foundMatch = questions.stream().anyMatch(q -> q.question().equals(answerKey));
+				if (!foundMatch) {
+					logger.warn("Answer map contains unexpected key that does not match any question: \"{}\"",
+							answerKey);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Exception thrown when the answers provided by the user are invalid. Those
+	 * exceptions are typically raised after validating the answers map and have to be
+	 * propagated to the user not the AI agent.
+	 *
+	 * <code>spring.ai.tools.throw-exception-on-error=org.springaicommunity.agent.tools.AskUserQuestionTool$InvalidUserAnswerException</code>
+	 * has to be set for this behavior.
+	 */
+	public static class InvalidUserAnswerException extends RuntimeException {
+
+		public InvalidUserAnswerException(String message) {
+			super(message);
+		}
+
 	}
 
 	public static Builder builder() {

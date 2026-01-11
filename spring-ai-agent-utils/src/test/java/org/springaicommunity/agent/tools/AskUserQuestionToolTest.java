@@ -501,6 +501,61 @@ class AskUserQuestionToolTest {
 	}
 
 	@Nested
+	@DisplayName("Answer Validation Tests")
+	class AnswerValidationTests {
+
+		@Test
+		@DisplayName("Should reject null answers map")
+		void shouldRejectNullAnswersMap() {
+			AskUserQuestionTool invalidTool = AskUserQuestionTool.builder()
+				.questionAnswerFunction(questions -> null)
+				.build();
+
+			List<Option> options = List.of(new Option("A", "First"), new Option("B", "Second"));
+			List<Question> questions = List.of(new Question("Question?", "Header", options, false));
+
+			assertThatThrownBy(() -> invalidTool.askUserQuestion(questions, null))
+				.isInstanceOf(AskUserQuestionTool.InvalidUserAnswerException.class)
+				.hasMessageContaining("questionAnswerFunction returned null");
+		}
+
+		@Test
+		@DisplayName("Should reject missing answers for questions")
+		void shouldRejectMissingAnswersForQuestions() {
+			AskUserQuestionTool invalidTool = AskUserQuestionTool.builder()
+				.questionAnswerFunction(questions -> new HashMap<>())
+				.build();
+
+			List<Option> options = List.of(new Option("A", "First"), new Option("B", "Second"));
+			List<Question> questions = List.of(new Question("Question?", "Header", options, false));
+
+			assertThatThrownBy(() -> invalidTool.askUserQuestion(questions, null))
+				.isInstanceOf(AskUserQuestionTool.InvalidUserAnswerException.class)
+				.hasMessageContaining("Missing answer for question");
+		}
+
+		@Test
+		@DisplayName("Should reject null answer values")
+		void shouldRejectNullAnswerValues() {
+			AskUserQuestionTool invalidTool = AskUserQuestionTool.builder()
+				.questionAnswerFunction(questions -> {
+					Map<String, String> answers = new HashMap<>();
+					answers.put("Question?", null);
+					return answers;
+				})
+				.build();
+
+			List<Option> options = List.of(new Option("A", "First"), new Option("B", "Second"));
+			List<Question> questions = List.of(new Question("Question?", "Header", options, false));
+
+			assertThatThrownBy(() -> invalidTool.askUserQuestion(questions, null))
+				.isInstanceOf(AskUserQuestionTool.InvalidUserAnswerException.class)
+				.hasMessageContaining("is null");
+		}
+
+	}
+
+	@Nested
 	@DisplayName("Thread Safety Tests")
 	class ThreadSafetyTests {
 

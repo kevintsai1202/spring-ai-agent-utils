@@ -110,47 +110,19 @@ Map<String, String> answers = Map.of(
 );
 ```
 
-### Answer Error Handling
+### Error Handling
 
-The `questionAnswerFunction` should handle errors appropriately:
+The tool automatically validates the answers returned by `questionAnswerFunction`:
 
-**Return Value Requirements:**
-- Must return a non-null `Map<String, String>`
-- Map keys should match the `question` text from each `Question` object
-- Missing answers for questions may cause the AI agent to behave unexpectedly
-- Empty strings are valid answers, but `null` values should be avoided
+- The returned map is non-null and all questions have corresponding answers (keys match question text)
+- No answer values are null (empty strings are acceptable)
 
-**Exception Handling:**
-- If the function throws an exception, the tool execution will fail
-- The AI agent may retry or handle the failure based on the Spring AI configuration
-- For timeout scenarios (e.g., user doesn't respond), consider throwing a descriptive exception or implementing a retry mechanism
+If validation fails, an `InvalidUserAnswerException` is thrown with a descriptive error message.
+This exception indicates user input errors and should be propagated to the user, not the AI agent
 
-**Example with error handling:**
-```java
-AskUserQuestionTool tool = AskUserQuestionTool.builder()
-    .questionAnswerFunction(questions -> {
-        try {
-            Map<String, String> answers = promptUser(questions);
+> **Tip:**  Configure Spring AI to handle this: `spring.ai.tools.throw-exception-on-error=org.springaicommunity.agent.tools.AskUserQuestionTool$InvalidUserAnswerException`
 
-            // Validate all questions have answers
-            for (Question q : questions) {
-                if (!answers.containsKey(q.question())) {
-                    throw new IllegalStateException(
-                        "Missing answer for question: " + q.question()
-                    );
-                }
-            }
-
-            return answers;
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("User input interrupted", e);
-        } catch (TimeoutException e) {
-            throw new RuntimeException("User did not respond in time", e);
-        }
-    })
-    .build();
-```
+If the answer map contains keys that don't match any question, a warning is logged but execution continues. This allows flexibility while alerting developers to potential issues.
 
 ## Implementation Example
 
