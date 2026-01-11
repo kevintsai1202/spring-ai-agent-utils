@@ -39,9 +39,7 @@ You have to provide a `questionAnswerFunction(Function<List<Question>, Map<Strin
 
 The `AskUserQuestionTool` class is thread-safe and can be used concurrently by multiple threads. However, the provided `questionAnswerFunction` must also be thread-safe if shared state is maintained.
 
-All data structures are immutable with defensive copies:
-- `options` list is copied on Question construction
-- Returned collections cannot be modified
+All data structures are immutable with defensive copies. The `options` list is copied on Question construction and all returned collections cannot be modified.
 
 ## Question Format
 
@@ -50,12 +48,10 @@ Each [Question](https://github.com/spring-ai-community/spring-ai-agent-utils/blo
 
 - `question` - The complete question text. Required, not blank, should end with "?"
 - `header` - Short label for UI display. Required, max 12 characters
-- `options` - List of the available [Options](https://github.com/spring-ai-community/spring-ai-agent-utils/blob/main/spring-ai-agent-utils/src/main/java/org/springaicommunity/agent/tools/AskUserQuestionTool.java#L118).
+- `options` - List of the available [Options](https://github.com/spring-ai-community/spring-ai-agent-utils/blob/main/spring-ai-agent-utils/src/main/java/org/springaicommunity/agent/tools/AskUserQuestionTool.java#L118). Each [Options](https://github.com/spring-ai-community/spring-ai-agent-utils/blob/main/spring-ai-agent-utils/src/main/java/org/springaicommunity/agent/tools/AskUserQuestionTool.java#L118) has:
+    - `label` - Display text (e.g., "React", "Vue", "Angular")
+    - `description` - Explanation of what this option means
 - `multiSelect` - Flag indicating if multiple selections are allowed. Defaults to false if null.
-
-Each [Options](https://github.com/spring-ai-community/spring-ai-agent-utils/blob/main/spring-ai-agent-utils/src/main/java/org/springaicommunity/agent/tools/AskUserQuestionTool.java#L118) has:
-- `label` - Display text (e.g., "React", "Vue", "Angular")
-- `description` - Explanation of what this option means
 
 **Example Questions:**
 
