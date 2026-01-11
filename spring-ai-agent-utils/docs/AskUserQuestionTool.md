@@ -15,6 +15,8 @@ The `AskUserQuestionTool` is a Spring AI implementation of [Claude Code's AskUse
 
 The tool follows the question-answer workflow: AI generates questions with options, user provides answers, and AI continues with the collected input.
 
+> **Improtant:** The AskUserQuestionTool can be used only with main Agents not sub-agents. Subagents cannot directly interact with users. When invoked via the Task tool, they operate in a completely isolated context.
+
 ## Basic Usage
 
 ```java
