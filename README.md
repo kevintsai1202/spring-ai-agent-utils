@@ -9,6 +9,8 @@ A [Spring AI](https://docs.spring.io/spring-ai/reference/2.0-SNAPSHOT/index.html
 
 ## Overview
 
+<img style="display: block; margin: auto;" align="right" src="./spring-ai-agent-utils/docs/spring-ai-agent-utils-logo.png" width="250" />
+
 Spring AI Agent Utils reimplements core Claude Code capabilities as Spring AI tools, enabling sophisticated agentic workflows with file operations, shell execution, web access, task management, and extensible agent skills.
 
 This project demonstrates how to reverse-engineer and reimplement Claude Code's powerful features within the Spring AI ecosystem, making them available to Java developers building AI agents.
