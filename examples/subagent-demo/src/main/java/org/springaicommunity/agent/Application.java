@@ -30,34 +30,24 @@ import org.springframework.core.io.Resource;
 @SpringBootApplication
 public class Application {
 
-	@Value("${agent.model:Unknown}")
-	String agentModel;
-
-	@Value("${agent.model.knowledge.cutoff:Unknown}")
-	String agentModelKnowledgeCutoff;
-
-	@Value("${agent.skills.paths}")
-	List<String> skillPaths;
-
-	@Value("classpath:/prompt/MAIN_AGENT_SYSTEM_PROMPT_V2.md")
-	Resource systemPrompt;
-
-	@Value("${BRAVE_API_KEY:#{null}}")
-	String braveApiKey;
-
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
 	}
 
 	@Bean
-	CommandLineRunner commandLineRunner(ChatClient.Builder chatClientBuilder) {
+	CommandLineRunner commandLineRunner(ChatClient.Builder chatClientBuilder,
+			@Value("${agent.model:Unknown}") String agentModel,
+			@Value("${agent.model.knowledge.cutoff:Unknown}") String agentModelKnowledgeCutoff,
+			@Value("${agent.skills.paths}") List<Resource> skillPaths,
+			@Value("${agent.tasks.paths}") List<Resource> agentPaths,
+			@Value("classpath:/prompt/MAIN_AGENT_SYSTEM_PROMPT_V2.md") Resource systemPrompt,
+			@Value("${BRAVE_API_KEY:#{null}}") String braveApiKey) {
 
 		return args -> {
 
 			var taskTools = TaskToolCallbackProvider.builder()
-				.agentDirectories(
-						"/Users/christiantzolov/Dev/projects/spring-ai-agent-utils/examples/subagent-demo/src/main/resources/agents")
-				.skillsDirectories(skillPaths)
+				.agentResources(agentPaths)
+				.skillsResources(skillPaths)
 				.chatClientBuilder(chatClientBuilder.clone()
 					.defaultToolContext(Map.of("foo", "bar"))
 					.defaultAdvisors(new MyLoggingAdvisor(0, "[TASK]")))
@@ -75,7 +65,7 @@ public class Application {
 				.defaultToolCallbacks(taskTools)
 
 				// skills tool
-				.defaultToolCallbacks(SkillsTool.builder().addSkillsDirectories(skillPaths).build())
+				.defaultToolCallbacks(SkillsTool.builder().addSkillsResources(skillPaths).build())
 
 				
 				.defaultTools(

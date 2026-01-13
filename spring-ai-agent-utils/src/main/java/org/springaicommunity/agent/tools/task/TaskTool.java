@@ -277,6 +277,24 @@ public class TaskTool {
 			return this;
 		}
 
+		public Builder addTasksResources(List<Resource> tasksRootPaths) {
+			for (Resource tasksRootPath : tasksRootPaths) {
+				this.addTasksResource(tasksRootPath);
+			}
+			return this;
+		}
+
+		public Builder addTasksResource(Resource tasksRootPath) {
+			try {
+				String path = tasksRootPath.getFile().toPath().toAbsolutePath().toString();
+				this.addTaskDirectory(path);
+			}
+			catch (IOException ex) {
+				throw new RuntimeException("Failed to load tasks from directory: " + tasksRootPath, ex);
+			}
+			return this;
+		}
+
 		public Builder addTaskDirectory(String taskRootDirectory) {
 			this.addTaskDirectories(List.of(taskRootDirectory));
 			return this;

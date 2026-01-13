@@ -1,384 +1,201 @@
 # Code Agent Demo
 
-A comprehensive demonstration of building an AI-powered coding assistant using Spring AI and the [spring-ai-agent-utils](../../spring-ai-agent-utils) library. This example showcases how to create a Claude Code-inspired agentic system with file operations, shell execution, web access, and extensible skills.
+An interactive AI coding assistant built with Spring AI and [spring-ai-agent-utils](../../spring-ai-agent-utils). Features file operations, shell execution, web access, MCP integration, and extensible skills.
 
 ## Overview
 
-This demo implements an interactive command-line AI assistant capable of:
+Command-line AI assistant with:
 
-- **Code Navigation**: Search and read files using grep and file system operations
-- **Shell Execution**: Run commands, manage background processes
-- **Web Research**: Search the web and fetch/summarize content intelligently
-- **Task Management**: Track multi-step operations with structured todo lists
-- **Extensible Skills**: Dynamically load custom capabilities from Markdown files
-- **Multi-Model Support**: Switch between Anthropic Claude, OpenAI GPT, and Google Gemini
+- **Code Operations**: Read, write, edit files; search with grep
+- **Shell Execution**: Run commands synchronously or in background
+- **Web Research**: Search and fetch web content with AI summarization
+- **Task Management**: Track multi-step operations with todo lists
+- **User Interaction**: Ask questions and collect answers during execution
+- **Skills System**: Load custom capabilities from Markdown files
+- **MCP Integration**: Connect to Model Context Protocol servers (AirBnB demo included)
+- **Multi-Model Support**: Anthropic Claude, OpenAI GPT, or Google Gemini
 
-## Features
+## Tools
 
-### Core Capabilities
-
-This demo integrates the full suite of spring-ai-agent-utils tools:
-
-1. **[SkillsTool](../../spring-ai-agent-utils/docs/SkillsTool.md)** - Extensible skill system for custom capabilities
-2. **[ShellTools](../../spring-ai-agent-utils/docs/ShellTools.md)** - Execute shell commands (sync/async)
-3. **[FileSystemTools](../../spring-ai-agent-utils/docs/FileSystemTools.md)** - Read, write, and edit files
-4. **[GrepTool](../../spring-ai-agent-utils/docs/GrepTool.md)** - Search code with regex patterns
-5. **[SmartWebFetchTool](../../spring-ai-agent-utils/docs/SmartWebFetchTool.md)** - AI-powered web content fetching
-6. **[BraveWebSearchTool](../../spring-ai-agent-utils/docs/BraveWebSearchTool.md)** - Web search integration
-7. **[TodoWriteTool](../../spring-ai-agent-utils/docs/TodoWriteTool.md)** - Task planning and tracking
-
-### Advanced Features
-
-- **Conversation Memory**: 500-message window for context retention
-- **Custom System Prompt**: Configured for professional coding assistance
-- **Advisor Pipeline**: Tool calling, memory management, and custom logging
-- **Multi-Provider Support**: Easy switching between AI model providers
+- **[AskUserQuestionTool](../../spring-ai-agent-utils/docs/AskUserQuestionTool.md)** - Interactive Q&A during execution
+- **[SkillsTool](../../spring-ai-agent-utils/docs/SkillsTool.md)** - Load custom skills from Markdown files
+- **[ShellTools](../../spring-ai-agent-utils/docs/ShellTools.md)** - Execute shell commands
+- **[FileSystemTools](../../spring-ai-agent-utils/docs/FileSystemTools.md)** - File read/write/edit operations
+- **[GrepTool](../../spring-ai-agent-utils/docs/GrepTool.md)** - Regex-based code search
+- **[SmartWebFetchTool](../../spring-ai-agent-utils/docs/SmartWebFetchTool.md)** - AI-powered web content extraction
+- **[BraveWebSearchTool](../../spring-ai-agent-utils/docs/BraveWebSearchTool.md)** - Web search
+- **[TodoWriteTool](../../spring-ai-agent-utils/docs/TodoWriteTool.md)** - Task tracking
+- **MCP Tools** - External tool integration via Model Context Protocol
 
 ## Prerequisites
 
-- Java 17 or higher
+- Java 17+
 - Maven 3.6+
-- API keys for desired AI providers:
-  - Google Gemini: `GOOGLE_CLOUD_PROJECT` (default provider)
-  - Anthropic Claude: `ANTHROPIC_API_KEY`
-  - OpenAI GPT: `OPENAI_API_KEY`
-  - Brave Search: `BRAVE_API_KEY` (for web search)
+- API key for at least one AI provider:
+  - `ANTHROPIC_API_KEY` (Claude - recommended)
+  - `OPENAI_API_KEY` (GPT)
+  - `GOOGLE_CLOUD_PROJECT` (Gemini)
+- Optional: `BRAVE_API_KEY` for web search
 
 ## Quick Start
 
-### 1. Set Environment Variables
-
 ```bash
-# Google Gemini (currently active)
-export GOOGLE_CLOUD_PROJECT=your-project-id
+# 1. Set environment variables
+export ANTHROPIC_API_KEY=your-key-here
+export BRAVE_API_KEY=your-brave-key  # optional
 
-# Optional: For web search
-export BRAVE_API_KEY=your-brave-api-key
-
-# Alternative providers (uncomment dependencies in pom.xml)
-# export ANTHROPIC_API_KEY=your-anthropic-key
-# export OPENAI_API_KEY=your-openai-key
-```
-
-### 2. Build and Run
-
-```bash
-# From the code-agent-demo directory
-mvn clean install
-
-# Run the application
+# 2. Run
+cd examples/code-agent-demo
 mvn spring-boot:run
 ```
 
-### 3. Interact with the Agent
-
+Example interaction:
 ```
-I am your assistant.
+> USER: Search for TODO comments in Java files
+> ASSISTANT: [Uses GrepTool to search]
 
-USER: Search for TODO comments in this project
-
-ASSISTANT: Let me search for TODO comments using the grep tool...
-[Agent uses GrepTool to find TODOs]
-
-USER: Create a summary of the Application.java file
-
-ASSISTANT: I'll read the file and create a summary...
-[Agent uses FileSystemTools to read and analyze]
+> USER: What tools do I have available?
+> ASSISTANT: [Lists configured tools]
 ```
 
 ## Configuration
 
-### Application Properties
-
-Configure the AI provider and skills location in [application.properties](src/main/resources/application.properties):
+Key settings in [application.properties](src/main/resources/application.properties):
 
 ```properties
-# Application settings
-spring.main.web-application-type=none
-spring.application.name=code-agent-demo
-
-# Skills configuration
-app.agent.skills.paths=/Users/christiantzolov/Dev/projects/spring-ai-agent-utils/.claude/skills
-
-# AI Model (Google Gemini - active)
-spring.ai.google.genai.api-key=${GOOGLE_CLOUD_API_KEY}
-spring.ai.google.genai.location=global
-spring.ai.google.genai.project-id=${GOOGLE_CLOUD_PROJECT}
-spring.ai.google.genai.options.model=gemini-3-pro-preview
-
-# Alternative providers (commented out)
-# Anthropic Claude
-# spring.ai.anthropic.api-key=${ANTHROPIC_API_KEY}
-# spring.ai.anthropic.options.model=claude-sonnet-4-5-20250929
-
-# OpenAI GPT
-# spring.ai.openai.api-key=${OPENAI_API_KEY}
-# spring.ai.openai.options.model=gpt-5-mini-2025-08-07
-# spring.ai.openai.options.temperature=1.0
-```
-
-### Switching AI Providers
-
-To use a different AI model:
-
-1. **Comment out** the current provider dependency in [pom.xml](pom.xml)
-2. **Uncomment** your desired provider dependency
-3. **Update** application.properties with the corresponding configuration
-4. **Rebuild** the project
-
-Example for Anthropic Claude:
-
-```xml
-<!-- In pom.xml -->
-<dependency>
-    <groupId>org.springframework.ai</groupId>
-    <artifactId>spring-ai-starter-model-anthropic</artifactId>
-</dependency>
-```
-
-```properties
-# In application.properties
+# Active provider (uncomment one in pom.xml)
 spring.ai.anthropic.api-key=${ANTHROPIC_API_KEY}
-spring.ai.anthropic.options.model=claude-sonnet-4-5-20250929
+spring.ai.anthropic.chat.options.model=claude-sonnet-4-5-20250929
+
+# Skills location (classpath resource)
+agent.skills.paths=classpath:/.claude/skills
+
+# MCP servers
+spring.ai.mcp.client.stdio.servers-configuration=classpath:/mcp-servers-config.json
+
+# Model metadata for system prompt
+agent.model=claude-sonnet-4-5-20250929
+agent.model.knowledge.cutoff=2025-01-01
 ```
 
-### Skills Directory
+### Switching Models
 
-Skills are loaded from the path specified in `app.agent.skills.paths`. Create custom skills by adding Markdown files with YAML frontmatter:
+1. Edit [pom.xml](pom.xml) - comment/uncomment desired provider
+2. Update [application.properties](src/main/resources/application.properties) with matching config
+3. Rebuild: `mvn clean install`
+
+### Custom Skills
+
+Add Markdown files to [src/main/resources/.claude/skills/](src/main/resources/.claude/skills/):
 
 ```markdown
 ---
 name: my-skill
-description: Description of what the skill does and when to use it
-allowed-tools: Read, Bash, Grep
-model: claude-sonnet-4-5-20250929
+description: When to use this skill
+allowed-tools: Read, Bash
 ---
-
-# Your skill prompt content here
+Skill prompt instructions here...
 ```
 
-See the [SkillsTool documentation](../../spring-ai-agent-utils/docs/SkillsTool.md) for details.
+See [SkillsTool docs](../../spring-ai-agent-utils/docs/SkillsTool.md) for details.
 
 ## Architecture
 
-### ChatClient Configuration
+### ChatClient Setup
 
-The demo builds a fully-configured ChatClient with:
+[Application.java:51-94](src/main/java/org/springaicommunity/agent/Application.java#L51-L94) configures the ChatClient:
 
 ```java
 ChatClient chatClient = chatClientBuilder
-    .defaultSystem(systemPrompt)                    // Custom system prompt
-    .defaultToolCallbacks(skillsTool)               // Skills tool (ToolCallback)
-    .defaultTools(                                  // Standard tools
-        new ShellTools(),
-        FileSystemTools.builder().build(),
-        smartWebFetchTool,
-        braveWebSearchTool,
-        TodoWriteTool.builder().build(),
-        GrepTool.builder().build())
-    .defaultAdvisors(                               // Advisor chain
-        ToolCallAdvisor.builder()
-            .conversationHistoryEnabled(false)
-            .build(),
-        MessageChatMemoryAdvisor.builder(chatMemory)
-            .order(Ordered.HIGHEST_PRECEDENCE + 1000)
-            .build(),
-        new MyLoggingAdvisor())
+    .defaultSystem(systemPrompt)                        // MAIN_AGENT_SYSTEM_PROMPT_V2.md
+    .defaultToolCallbacks(mcpToolCallbackProvider)      // MCP tools
+    .defaultToolCallbacks(skillsTool)                   // Skills
+    .defaultTools(AskUserQuestionTool, TodoWriteTool,   // Agent tools
+                  ShellTools, FileSystemTools,
+                  SmartWebFetchTool, BraveWebSearchTool, GrepTool)
+    .defaultAdvisors(ToolCallAdvisor,                   // Tool execution
+                     MessageChatMemoryAdvisor)          // 500-message memory
     .build();
 ```
 
-### System Prompt
+### Key Features
 
-The agent uses a comprehensive system prompt ([CODE_AGENT_PROMPT_V2.md](../../spring-ai-agent-utils/src/main/resources/prompt/CODE_AGENT_PROMPT_V2.md)) that configures:
+- **System Prompt**: [MAIN_AGENT_SYSTEM_PROMPT_V2.md](../../spring-ai-agent-utils/src/main/resources/prompt/MAIN_AGENT_SYSTEM_PROMPT_V2.md) - comprehensive agent behavior config
+- **MCP Integration**: Auto-connects to configured MCP servers (AirBnB example included)
+- **User Interaction**: `AskUserQuestionTool` enables multi-choice questions during execution
+- **Logging**: Optional `MyLoggingAdvisor` for debugging (currently commented out)
 
-- Professional, concise communication style
-- Security-aware coding practices (OWASP Top 10)
-- Task management best practices
-- Tool usage guidelines
-- Git workflow patterns
+## Usage Examples
 
-### Custom Advisors
-
-**MyLoggingAdvisor** - Custom advisor for debugging that logs:
-- User messages and system context
-- Available tools before each request
-- Assistant responses with tool calls
-
-## Example Use Cases
-
-### Code Exploration
-
+**Code Search**
 ```
-USER: Find all Java classes that extend SpringBootApplication
-
-[Agent uses GrepTool to search for patterns]
+> USER: Find all classes extending SpringBootApplication
+[Uses GrepTool with pattern]
 ```
 
-### Running Tests
-
+**Interactive Questions**
 ```
-USER: Run the Maven tests and show me the results
-
-[Agent uses ShellTools to execute 'mvn test']
+> USER: Help me choose a testing framework
+> ASSISTANT: [Uses AskUserQuestionTool to present options: JUnit, TestNG, etc.]
 ```
 
-### Research and Documentation
-
+**Multi-Step Tasks**
 ```
-USER: Search for best practices on Spring AI advisors and summarize
-
-[Agent uses BraveWebSearchTool and SmartWebFetchTool]
+> USER: Create a DateUtil class, write tests, and run them
+[Uses TodoWriteTool to plan → FileSystemTools to write → ShellTools to test]
 ```
 
-### Multi-Step Tasks
-
+**Web Research**
 ```
-USER: Create a new utility class for date formatting, write tests, and run them
-
-[Agent uses TodoWriteTool to plan, FileSystemTools to create files,
- ShellTools to run tests]
+> USER: Find latest Spring AI advisor patterns
+[Uses BraveWebSearchTool + SmartWebFetchTool]
 ```
 
 ## Project Structure
 
 ```
 code-agent-demo/
-├── src/main/java/org/springaicommunity/agent/
-│   ├── Application.java           # Main application with ChatClient setup
-│   └── MyLoggingAdvisor.java      # Custom logging advisor
+├── src/main/java/.../agent/
+│   ├── Application.java           # ChatClient setup and main loop
+│   └── MyLoggingAdvisor.java      # Optional debug advisor
 ├── src/main/resources/
+│   ├── .claude/skills/            # Custom skills directory
 │   ├── application.properties     # Configuration
-│   └── mcp-servers-config.json   # MCP server configuration
-├── pom.xml                        # Maven dependencies
-└── README.md                      # This file
+│   └── mcp-servers-config.json    # MCP server definitions
+└── pom.xml                        # Dependencies
 ```
-
-## Dependencies
-
-Key dependencies from [pom.xml](pom.xml):
-
-- **Spring Boot 4.0.0** - Framework foundation
-- **Spring AI 2.0.0-SNAPSHOT** - AI integration
-- **spring-ai-agent-utils 0.1.1+** - Agent tools library
-- **spring-ai-starter-model-google-genai** - Google Gemini provider (active)
-- **netty-resolver-dns-native-macos** - macOS networking support
-
-Alternative providers (commented out):
-- spring-ai-starter-model-anthropic
-- spring-ai-starter-model-openai-sdk
-- spring-ai-starter-mcp-client-webflux
 
 ## How It Works
 
-1. **Initialization**: Application starts and builds the ChatClient with all tools and advisors
-2. **Chat Loop**: User enters prompts via console
-3. **Agent Processing**:
-   - System prompt guides the agent's behavior
-   - Agent analyzes the request and determines which tools to use
-   - Tools are invoked with appropriate parameters
-   - Conversation memory maintains context
-4. **Response**: Agent synthesizes tool results into a coherent response
+1. Application starts, builds ChatClient with tools and advisors
+2. User enters prompts in console loop
+3. Agent processes request using system prompt guidance
+4. Agent selects and invokes appropriate tools
+5. Results synthesized into response
+6. Conversation memory maintains context (500 messages)
 
-### Tool Flow Example
+## Customization
 
-```
-User: "Find all TODO comments in Java files"
-  ↓
-Agent decides to use GrepTool
-  ↓
-GrepTool.execute(pattern="TODO", glob="**/*.java")
-  ↓
-Agent receives results and formats response
-  ↓
-User sees: "I found 5 TODO comments: ..."
-```
-
-## Advanced Configuration
-
-### Adjusting Memory Window
-
-Change the message history size:
-
+**Adjust memory**:
 ```java
-MessageWindowChatMemory chatMemory = MessageWindowChatMemory.builder()
-    .maxMessages(1000)  // Increase from default 500
-    .build();
+MessageWindowChatMemory.builder().maxMessages(1000).build()
 ```
 
-### Customizing Tool Behavior
-
-Configure individual tools:
-
+**Tool configuration**:
 ```java
-SmartWebFetchTool.builder(chatClient)
-    .maxContentLength(150_000)              // Increase content limit
-    .domainSafetyCheck(true)                // Enable safety checking
-    .maxRetries(3)                          // More retry attempts
-    .build()
-
-BraveWebSearchTool.builder(braveApiKey)
-    .resultCount(20)                        // More search results
-    .build()
+BraveWebSearchTool.builder(apiKey).resultCount(20).build()
+SmartWebFetchTool.builder(client).maxContentLength(150_000).build()
 ```
 
-### Adding More Skills
+**Enable debug logging**:
+Uncomment `MyLoggingAdvisor` in [Application.java:90-93](src/main/java/org/springaicommunity/agent/Application.java#L90-L93)
 
-1. Create skill files in your skills directory
-2. Update `app.agent.skills.paths` if using a different location
-3. Skills are automatically discovered on startup
+## Resources
 
-## Troubleshooting
-
-### Agent doesn't respond
-
-- Check that your API key is set correctly
-- Verify the model name matches your provider's offering
-- Check logs from MyLoggingAdvisor for errors
-
-### "API key not found" error
-
-```bash
-# Make sure environment variables are exported
-echo $GOOGLE_CLOUD_PROJECT
-echo $BRAVE_API_KEY
-```
-
-### Tools not working
-
-- Verify tool permissions (file system access, shell execution)
-- Check that skills directory path is correct and accessible
-- Review logs for tool invocation errors
-
-### Out of memory
-
-```bash
-# Increase Java heap size
-export MAVEN_OPTS="-Xmx2g"
-mvn spring-boot:run
-```
-
-## Learn More
-
-- [Spring AI Agent Utils Documentation](../../spring-ai-agent-utils/README.md)
-- [Individual Tool Documentation](../../spring-ai-agent-utils/docs/)
-- [Spring AI Documentation](https://docs.spring.io/spring-ai/reference/)
-
-## Contributing
-
-This is a demonstration project. For contributing to the core library, see the main [spring-ai-agent-utils](../../spring-ai-agent-utils) project.
+- [spring-ai-agent-utils Documentation](../../spring-ai-agent-utils/README.md)
+- [Tool Documentation](../../spring-ai-agent-utils/docs/)
+- [Spring AI Docs](https://docs.spring.io/spring-ai/reference/)
 
 ## License
 
-Apache License 2.0 - See the project root for details.
-
-## Related Examples
-
-Explore other examples in this repository:
-- Additional examples may be available in the [examples](../) directory
-
-## Support
-
-For issues or questions:
-- Open an issue in the spring-ai-agent-utils repository
-- Check the [tool documentation](../../spring-ai-agent-utils/docs/) for detailed usage
-- Review the code-agent prompt for agent behavior guidelines
+Apache License 2.0

@@ -15,6 +15,7 @@
 */
 package org.springaicommunity.agent.tools.task;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +34,7 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.tool.method.MethodToolCallbackProvider;
+import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -87,6 +89,24 @@ public class TaskToolCallbackProvider implements ToolCallbackProvider {
 			return this;
 		}
 
+		public Builder agentResources(List<Resource> agentRootPaths) {
+			for (Resource agentRootPath : agentRootPaths) {
+				this.agentResource(agentRootPath);
+			}
+			return this;
+		}
+
+		public Builder agentResource(Resource agentRootPath) {
+			try {
+				String path = agentRootPath.getFile().toPath().toAbsolutePath().toString();
+				this.agentDirectories(path);
+			}
+			catch (IOException ex) {
+				throw new RuntimeException("Failed to load tasks from directory: " + agentRootPath, ex);
+			}
+			return this;
+		}
+
 		public Builder agentDirectories(List<String> agentDirectories) {
 			Assert.notNull(agentDirectories, "agentDirectories must not be null");
 			this.agentDirectories.addAll(agentDirectories);
@@ -96,6 +116,25 @@ public class TaskToolCallbackProvider implements ToolCallbackProvider {
 		public Builder agentDirectories(String agentDirectory) {
 			Assert.notNull(agentDirectory, "agentDirectory must not be null");
 			this.agentDirectories.add(agentDirectory);
+			return this;
+		}
+
+
+		public Builder skillsResources(List<Resource> skillsRootPaths) {
+			for (Resource skillsRootPath : skillsRootPaths) {
+				this.skillsResource(skillsRootPath);
+			}
+			return this;
+		}
+
+		public Builder skillsResource(Resource skillsRootPath) {
+			try {
+				String path = skillsRootPath.getFile().toPath().toAbsolutePath().toString();
+				this.skillsDirectories(path);
+			}
+			catch (IOException ex) {
+				throw new RuntimeException("Failed to load skills from directory: " + skillsRootPath, ex);
+			}
 			return this;
 		}
 
@@ -116,8 +155,9 @@ public class TaskToolCallbackProvider implements ToolCallbackProvider {
 			List<ToolCallback> callbacks = new ArrayList<>();
 
 			List<ToolCallback> callbacks2 = List.of(MethodToolCallbackProvider.builder()
-				.toolObjects(TodoWriteTool.builder().build(), GrepTool.builder().build(), GlobTool.builder().build(), ShellTools.builder().build(),
-						FileSystemTools.builder().build(), SmartWebFetchTool.builder(chatClientBuilder.clone().build()).build())
+				.toolObjects(TodoWriteTool.builder().build(), GrepTool.builder().build(), GlobTool.builder().build(),
+						ShellTools.builder().build(), FileSystemTools.builder().build(),
+						SmartWebFetchTool.builder(chatClientBuilder.clone().build()).build())
 				.build()
 				.getToolCallbacks());
 
