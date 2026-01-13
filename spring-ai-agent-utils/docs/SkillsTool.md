@@ -207,6 +207,47 @@ SkillsTool skillsTool = SkillsTool.builder()
     .build();
 ```
 
+### Loading from Spring Resources
+
+For better integration with Spring Boot, you can load skills from Spring `Resource` objects:
+
+```java
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
+
+@Configuration
+public class SkillsConfig {
+
+    @Autowired
+    private ResourceLoader resourceLoader;
+
+    @Bean
+    public SkillsTool skillsTool() {
+        Resource skillsResource = resourceLoader.getResource("classpath:.claude/skills");
+
+        return SkillsTool.builder()
+            .addSkillsResource(skillsResource)
+            .build();
+    }
+}
+```
+
+Loading multiple resources:
+
+```java
+@Bean
+public SkillsTool skillsTool() {
+    List<Resource> skillResources = List.of(
+        resourceLoader.getResource("classpath:.claude/skills"),
+        resourceLoader.getResource("file:${user.home}/.claude/skills")
+    );
+
+    return SkillsTool.builder()
+        .addSkillsResources(skillResources)
+        .build();
+}
+```
+
 ## Builder Configuration
 
 ### Basic Builder
@@ -242,6 +283,23 @@ SkillsTool.builder()
     .addSkillsDirectory("~/.claude/skills")
     .addSkillsDirectory("/shared/team-skills")
     .build();
+```
+
+### With Spring Resources
+
+```java
+import org.springframework.core.io.Resource;
+
+@Bean
+public SkillsTool skillsTool(ResourceLoader resourceLoader) {
+    Resource projectSkills = resourceLoader.getResource("classpath:.claude/skills");
+    Resource userSkills = resourceLoader.getResource("file:${user.home}/.claude/skills");
+
+    return SkillsTool.builder()
+        .addSkillsResource(projectSkills)
+        .addSkillsResource(userSkills)
+        .build();
+}
 ```
 
 ## Best Practices

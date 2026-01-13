@@ -134,6 +134,49 @@ TaskToolCallbackProvider taskTools = TaskToolCallbackProvider.builder()
     .build();
 ```
 
+### Loading from Spring Resources
+
+For better Spring Boot integration, you can load agents from Spring `Resource` objects:
+
+```java
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
+
+@Configuration
+public class TaskConfig {
+
+    @Autowired
+    private ResourceLoader resourceLoader;
+
+    @Bean
+    public TaskToolCallbackProvider taskTools(ChatClient.Builder chatClientBuilder) {
+        Resource agentsResource = resourceLoader.getResource("classpath:.claude/agents");
+
+        return TaskToolCallbackProvider.builder()
+            .chatClientBuilder(chatClientBuilder)
+            .agentResource(agentsResource)
+            .build();
+    }
+}
+```
+
+Loading multiple resources:
+
+```java
+@Bean
+public TaskToolCallbackProvider taskTools(ChatClient.Builder chatClientBuilder) {
+    List<Resource> agentResources = List.of(
+        resourceLoader.getResource("classpath:.claude/agents"),
+        resourceLoader.getResource("file:${user.home}/.claude/agents")
+    );
+
+    return TaskToolCallbackProvider.builder()
+        .chatClientBuilder(chatClientBuilder)
+        .agentResources(agentResources)
+        .build();
+}
+```
+
 ### Manual Configuration
 
 For more control, configure TaskTool and TaskOutputTool separately:
@@ -159,7 +202,16 @@ ToolCallback taskTool = TaskTool.builder()
     .chatClientBuilder(chatClientBuilder)
     .taskRepository(taskRepository)
     .tools(subAgentTools)
-    .addTaskDirectory("/path/to/custom/agents")  // Optional
+    .addTaskDirectory("/path/to/custom/agents")  // Optional: path-based
+    .build();
+
+// Alternative with Spring Resources
+Resource agentsResource = resourceLoader.getResource("classpath:.claude/agents");
+ToolCallback taskTool = TaskTool.builder()
+    .chatClientBuilder(chatClientBuilder)
+    .taskRepository(taskRepository)
+    .tools(subAgentTools)
+    .addTasksResource(agentsResource)  // Optional: resource-based
     .build();
 
 // Configure TaskOutputTool
@@ -669,6 +721,8 @@ public class TaskTool {
         Builder tools(ToolCallback tool);
         Builder addTaskDirectory(String taskRootDirectory);
         Builder addTaskDirectories(List<String> taskRootDirectories);
+        Builder addTasksResource(Resource tasksRootPath);
+        Builder addTasksResources(List<Resource> tasksRootPaths);
         Builder taskDescriptionTemplate(String template);
 
         ToolCallback build();
@@ -710,6 +764,8 @@ public class TaskToolCallbackProvider implements ToolCallbackProvider {
         Builder taskRepository(TaskRepository taskRepository);
         Builder agentDirectories(List<String> agentDirectories);
         Builder agentDirectories(String agentDirectory);
+        Builder agentResource(Resource agentRootPath);
+        Builder agentResources(List<Resource> agentRootPaths);
         Builder skillsDirectories(List<String> skillsDirectories);
         Builder skillsDirectories(String skillsDirectory);
         Builder braveApiKey(String braveApiKey);

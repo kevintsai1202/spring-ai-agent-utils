@@ -85,7 +85,7 @@ Writes content to a file, creating new files or overwriting existing ones.
 
 **Parameters:**
 - `filePath` (required) - The absolute path to the file to write (must be absolute)
-- `content` (required) - The content to write to the file
+- `content` (optional) - The content to write to the file (defaults to empty string if null)
 
 **Basic Usage:**
 
@@ -97,6 +97,14 @@ String result = fileTools.write(
     toolContext
 );
 // Returns: "Successfully created file: /path/to/new-file.txt (45 bytes)"
+
+// Create an empty file
+String result = fileTools.write(
+    "/path/to/empty-file.txt",
+    null,                    // content (creates empty file)
+    toolContext
+);
+// Returns: "Successfully created file: /path/to/empty-file.txt (0 bytes)"
 
 // Overwrite an existing file
 String result = fileTools.write(

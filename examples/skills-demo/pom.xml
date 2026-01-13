@@ -3,11 +3,11 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	
+
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.0.0</version>
+		<version>4.0.1</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 
@@ -20,7 +20,7 @@
 	<properties>
 		<java.version>17</java.version>
 		<maven.deploy.skip>true</maven.deploy.skip>
-		<spring-ai.version>2.0.0-SNAPSHOT</spring-ai.version>		
+		<spring-ai.version>2.0.0-SNAPSHOT</spring-ai.version>
 	</properties>
 
 	<dependencies>
@@ -31,25 +31,21 @@
 			<version>0.3.0-SNAPSHOT</version>
 		</dependency>
 
+
 		<!-- <dependency>
 			<groupId>org.springframework.ai</groupId>
-			<artifactId>spring-ai-starter-mcp-client-webflux</artifactId>
-		</dependency> -->
-
-		<dependency>
-			<groupId>org.springframework.ai</groupId>
 			<artifactId>spring-ai-starter-model-anthropic</artifactId>
-		</dependency>
+		</dependency> -->
 
 		<!-- <dependency>
 			<groupId>org.springframework.ai</groupId>
 			<artifactId>spring-ai-starter-model-openai-sdk</artifactId>
 		</dependency> -->
 
-		<!-- <dependency>
+		<dependency>
 			<groupId>org.springframework.ai</groupId>
 			<artifactId>spring-ai-starter-model-google-genai</artifactId>
-		</dependency> -->
+		</dependency>
 
 		<!-- Netty DNS resolver for macOS -->
 		<dependency>

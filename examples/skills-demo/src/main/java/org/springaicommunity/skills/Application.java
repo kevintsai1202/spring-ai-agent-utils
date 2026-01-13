@@ -1,5 +1,7 @@
 package org.springaicommunity.skills;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import org.springaicommunity.agent.tools.BraveWebSearchTool;
@@ -7,8 +9,6 @@ import org.springaicommunity.agent.tools.FileSystemTools;
 import org.springaicommunity.agent.tools.ShellTools;
 import org.springaicommunity.agent.tools.SkillsTool;
 import org.springaicommunity.agent.tools.SmartWebFetchTool;
-import org.springaicommunity.agent.tools.TodoWriteTool;
-import org.springaicommunity.agent.utils.AgentEnvironment;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.ToolCallAdvisor;
@@ -22,81 +22,62 @@ import org.springframework.core.io.Resource;
 @SpringBootApplication
 public class Application {
 
-	@Value("${agent.model:Unknown}")
-	String agentModel;
-
-	@Value("${agent.model.knowledge.cutoff:Unknown}")
-	String agentModelKnowledgeCutoff;
-
-	@Value("classpath:/prompt/MAIN_AGENT_SYSTEM_PROMPT_V2.md")
-	Resource systemPrompt;
-
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
 	}
 
-	// static final String skillsDir = "/Users/christiantzolov/.claude/skills";
-	static final String skillsDir = "/Users/christiantzolov/Dev/projects/spring-ai-agent-utils/examples/.claude/skills";
-
-	// static final String skillsDir =
-	// "/Users/christiantzolov/Dev/projects/demo/test-skills/skills/skills/pdf";
-
 	@Bean
-	CommandLineRunner commandLineRunner(ChatClient.Builder chatClientBuilder
-
-	) {
-		// , ToolCallbackProvider toolCallbackProvider) {
+	CommandLineRunner commandLineRunner(ChatClient.Builder chatClientBuilder,
+			@Value("${agent.skills.dirs:Unknown}") List<Resource> agentSkillsDirs) throws IOException {
 
 		return args -> {
 
 			ChatClient chatClient = chatClientBuilder // @formatter:off
-				.defaultSystem(p -> p.text(systemPrompt) // system prompt
-					.param(AgentEnvironment.ENVIRONMENT_INFO_KEY, AgentEnvironment.info())
-					.param(AgentEnvironment.GIT_STATUS_KEY, AgentEnvironment.gitStatus())
-					.param(AgentEnvironment.AGENT_MODEL_KEY, agentModel)
-					.param(AgentEnvironment.AGENT_MODEL_KNOWLEDGE_CUTOFF_KEY, agentModelKnowledgeCutoff))
 
-				.defaultToolCallbacks(SkillsTool.builder().addSkillsDirectory(skillsDir).build()) // skills tool
-				.defaultTools(ShellTools.builder().build())// built-in shell tools
-				.defaultTools(FileSystemTools.builder().build())// built-in file system tools
-				.defaultTools(SmartWebFetchTool.builder(chatClientBuilder.clone().build()).build())
-				.defaultTools(BraveWebSearchTool.builder(System.getenv("BRAVE_API_KEY")).resultCount(15).build())
-				.defaultTools(TodoWriteTool.builder().build())
+				// Skills tool
+				.defaultToolCallbacks(SkillsTool.builder().addSkillsResources(agentSkillsDirs).build())
 
-				// .defaultToolCallbacks(toolCallbackProvider) // MCP tool provider
-				.defaultAdvisors(ToolCallAdvisor.builder().build()) // tool calling advisor
-				.defaultAdvisors(new MyLoggingAdvisor()) // logging advisor
+				// Built-in tools
+				.defaultTools(
+					//Bash execution tool
+					ShellTools.builder().build(),// built-in shell tools
+					// Read, Write and Edit files tool
+					FileSystemTools.builder().build(),// built-in file system tools
+					// Smart web fetch tool
+					SmartWebFetchTool.builder(chatClientBuilder.clone().build()).build(),
+					// Brave web search tool
+					BraveWebSearchTool.builder(System.getenv("BRAVE_API_KEY"))
+						.resultCount(15).build())
+				
+				
+				.defaultAdvisors(
+					// Tool Calling advisor
+					ToolCallAdvisor.builder().build(),
+					// Custom logging advisor
+					MyLoggingAdvisor.builder()
+						.showAvailableTools(false)
+						.showSystemMessage(false)
+						.build())
+				.defaultToolContext(Map.of("foo", "bar"))
 				.build();
 				// @formatter:on
 
-			var answer1 = chatClient
+			var answer = chatClient
 				// .prompt("""
-				// Create a PDF explaining the concept of Chain of Thought (CoT) prompting
-				// in AI. Don't ask me for more details.
-				// """)
-				// .prompt("""
-				// Explain Spring AI and recursive advisors in simple terms. Do full
-				// research before answering. Collect information from internet if needed.
-				// """)
-				// .prompt("""
-				// Explain reinforcement learning in simple terms and use.
-				// First load the required skills.
-				// The use the Youtube video
-				// https://youtu.be/vXtfdGphr3c?si=xy8U2Al_Um5vE4Jd transcript to support
-				// your answer.
-				// Use absolute paths for the skills and scripts.
-				// Do not ask me for more details.
-				// """)
+				// 	Explain Spring AI and recursive advisors in simple terms. Do full
+				// 	research before answering. Collect information from internet if needed.
+				// 	Save the final answer in a PDF file in /tmp/spring-ai-overview.pdf.
+				// 	""")
 				.prompt("""
-						Please review the following class and suggest improvements:
-						/Users/christiantzolov/Dev/projects/spring-ai-agent-utils/spring-ai-agent-utils/src/main/java/org/springaicommunity/ai/agent/tools/BraveWebSearchTool.java
-						Check also the related tests and make sure they pass.
-						""")
-				.toolContext(Map.of("foo", "bar"))
+					Explain reinforcement learning in simple terms and use.
+					Use required skills.
+					Then use the Youtube video https://youtu.be/vXtfdGphr3c?si=xy8U2Al_Um5vE4Jd transcript to support your answer.
+					Use absolute paths for the skills and scripts. Do not ask me for more details.
+					""")
 				.call()
 				.content();
 
-			System.out.println("CoT Answer: " + answer1);
+			System.out.println("The Answer: " + answer);
 		};
 
 	}

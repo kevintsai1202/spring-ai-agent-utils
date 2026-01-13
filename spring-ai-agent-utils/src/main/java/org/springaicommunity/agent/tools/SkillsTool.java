@@ -33,6 +33,7 @@ import org.springaicommunity.agent.utils.MarkdownParser;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.ai.tool.function.FunctionToolCallback;
+import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
 
 /**
@@ -102,12 +103,30 @@ public class SkillsTool {
 
 		private String toolDescriptionTemplate = TOOL_DESCRIPTION_TEMPLATE;
 
-		private Builder() {
+		protected Builder() {
 
 		}
 
 		public Builder toolDescriptionTemplate(String template) {
 			this.toolDescriptionTemplate = template;
+			return this;
+		}
+
+		public Builder addSkillsResources(List<Resource> skillsRootPaths) {
+			for (Resource skillsRootPath : skillsRootPaths) {
+				this.addSkillsResource(skillsRootPath);
+			}
+			return this;
+		}
+
+		public Builder addSkillsResource(Resource skillsRootPath) {
+			try {
+				String path = skillsRootPath.getFile().toPath().toAbsolutePath().toString();
+				this.addSkillsDirectory(path);
+			}
+			catch (IOException ex) {
+				throw new RuntimeException("Failed to load skills from directory: " + skillsRootPath, ex);
+			}
 			return this;
 		}
 

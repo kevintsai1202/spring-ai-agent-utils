@@ -162,6 +162,8 @@ public class FileSystemTools {
 		ToolContext toolContext) { // @formatter:on
 
 		try {
+			content = content != null ? content : "";
+			
 			Path path = Paths.get(filePath);
 			File file = path.toFile();
 
