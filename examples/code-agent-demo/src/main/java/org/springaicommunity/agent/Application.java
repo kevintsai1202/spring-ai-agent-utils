@@ -66,7 +66,7 @@ public class Application {
 
 				// Ask user question tool
 				.defaultTools(AskUserQuestionTool.builder()
-					.questionAnswerFunction(Application::handleQuestions)
+					.questionHandler(Application::handleQuestions)
 					.answersValidation(false)
 					.build())
 

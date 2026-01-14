@@ -17,7 +17,6 @@ package org.springaicommunity.agent.tools;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import org.slf4j.Logger;
@@ -39,13 +38,13 @@ import org.springframework.util.Assert;
  * <p>
  * <strong>Thread Safety:</strong> This class is thread-safe. The tool can be safely used
  * by multiple threads concurrently. However, thread safety depends on the provided
- * {@code questionAnswerFunction} being thread-safe. If the function maintains mutable
- * shared state, the caller must ensure proper synchronization.
+ * {@link QuestionHandler} being thread-safe. If the handler maintains mutable shared
+ * state, the caller must ensure proper synchronization.
  *
  * <p>
  *
  * Note on Exception Handling: The tool validates the answers returned by the
- * {@code questionAnswerFunction}. If the answers are invalid (e.g., missing answers for
+ * {@link QuestionHandler}. If the answers are invalid (e.g., missing answers for
  * questions, null values), an {@link InvalidUserAnswerException} is thrown. This
  * exception indicates that the user provided invalid input. Such exceptions are typically
  * raised after validating the answers map and have to be propagated to the user, not the
@@ -63,41 +62,30 @@ public class AskUserQuestionTool {
 	private static final Logger logger = LoggerFactory.getLogger(AskUserQuestionTool.class);
 
 	/**
-	 * Function that handles the user question workflow.
+	 * Functional interface for handling user questions.
 	 *
 	 * <p>
-	 * When invoked, this function receives a list of {@link Question} objects that the AI
-	 * agent wants to ask the user.
+	 * Implementations should present the questions to the user and return a map of
+	 * answers keyed by question text. Answer values should be option labels (or
+	 * comma-separated labels for multi-select) or free text.
 	 *
 	 * <p>
-	 * The function should:
-	 * <ol>
-	 * <li>Present the questions to the user through your application's UI</li>
-	 * <li>Collect the user's answers (option labels or free text)</li>
-	 * <li>Return a Map containing the answers keyed by question text</li>
-	 * </ol>
-	 *
-	 * <p>
-	 * Answer format:
-	 * <ul>
-	 * <li>Keys: The question text (from {@link Question#question()} field)</li>
-	 * <li>Values: The selected option's label (from {@link Option#label()} field)</li>
-	 * <li>Multi-select: Join multiple labels with ", "</li>
-	 * <li>Free text: Use the user's custom text directly</li>
-	 * </ul>
-	 *
-	 * <p>
-	 * <strong>Thread Safety:</strong> This function may be called concurrently by
-	 * multiple threads. Implementations must be thread-safe or use appropriate
-	 * synchronization if they maintain mutable shared state.
+	 * <strong>Thread Safety:</strong> Implementations may be called concurrently and
+	 * must be thread-safe if they maintain mutable shared state.
 	 */
-	private final Function<List<Question>, Map<String, String>> questionAnswerFunction;
+	@FunctionalInterface
+	public interface QuestionHandler {
+		Map<String, String> handle(List<Question> questions);
+	}
+
+	private final QuestionHandler questionHandler;
+
 
 	private final boolean answersValidation;
 
-	protected AskUserQuestionTool(Function<List<Question>, Map<String, String>> questionAnswerFunction,
+	protected AskUserQuestionTool(QuestionHandler questionHandler,
 			boolean answersValidation) {
-		this.questionAnswerFunction = questionAnswerFunction;
+		this.questionHandler = questionHandler;
 		this.answersValidation = answersValidation;
 	}
 
@@ -213,7 +201,7 @@ public class AskUserQuestionTool {
 			questions.forEach(q -> logger.trace("Question: {}", q.question()));
 		}
 
-		Map<String, String> result = this.questionAnswerFunction.apply(questions);
+		Map<String, String> result = this.questionHandler.handle(questions);
 
 		// Validate the answer map
 		if (this.answersValidation) {
@@ -252,19 +240,17 @@ public class AskUserQuestionTool {
 	}
 
 	/**
-	 * Validates the answers map returned by the questionAnswerFunction according to the
-	 * following rules: - Answers map must not be null - Map keys should match the
-	 * question text from each Question object - All questions must have corresponding
-	 * answers - Answer values should not be null
+	 * Validates the answers map returned by the {@link QuestionHandler}. Ensures all
+	 * questions have non-null answers and map keys match question text.
 	 * @param questions the original questions asked
-	 * @param answers the answers map returned by the questionAnswerFunction
-	 * @throws IllegalStateException if validation fails
+	 * @param answers the answers map returned by the handler
+	 * @throws InvalidUserAnswerException if validation fails
 	 */
 	private void validateAnswers(List<Question> questions, Map<String, String> answers) {
 		// Validate that the map is not null
 		if (answers == null) {
 			throw new InvalidUserAnswerException(
-					"questionAnswerFunction returned null. Must return a non-null Map<String, String>");
+					"questionHandler returned null. Must return a non-null Map<String, String>");
 		}
 
 		// Validate that all questions have answers
@@ -318,7 +304,7 @@ public class AskUserQuestionTool {
 
 	public static class Builder {
 
-		private Function<List<Question>, Map<String, String>> questionAnswerFunction;
+		private QuestionHandler questionHandler;
 
 		private boolean answersValidation = true;
 
@@ -327,15 +313,15 @@ public class AskUserQuestionTool {
 			return this;
 		}
 
-		public Builder questionAnswerFunction(Function<List<Question>, Map<String, String>> questionAnswerFunction) {
-			Assert.notNull(questionAnswerFunction, "questionAnswerFunction must not be null");
-			this.questionAnswerFunction = questionAnswerFunction;
+		public Builder questionHandler(QuestionHandler questionHandler) {
+			Assert.notNull(questionHandler, "questionHandler must not be null");
+			this.questionHandler = questionHandler;
 			return this;
 		}
 
 		public AskUserQuestionTool build() {
-			Assert.notNull(questionAnswerFunction, "questionAnswerFunction must be provided");
-			return new AskUserQuestionTool(questionAnswerFunction, answersValidation);
+			Assert.notNull(questionHandler, "questionHandler must be provided");
+			return new AskUserQuestionTool(questionHandler, answersValidation);
 		}
 
 	}

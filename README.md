@@ -128,7 +128,7 @@ public class Application {
 
                 // User feedback tool
                 .defaultTools(AskUserQuestionTool.builder()
-                    .questionAnswerFunction(questions -> handleUserQuestions(questions))
+                    .questionHandler(questions -> handleUserQuestions(questions))
                     .build())
 
 				// Advisors

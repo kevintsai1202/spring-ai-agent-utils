@@ -52,7 +52,7 @@ class AskUserQuestionToolTest {
 	void setUp() {
 		this.capturedInput = new AtomicReference<>();
 		this.tool = AskUserQuestionTool.builder()
-			.questionAnswerFunction(questions -> {
+			.questionHandler(questions -> {
 				this.capturedInput.set(questions);
 				// Simulate user providing answers
 				Map<String, String> answers = new HashMap<>();
@@ -73,7 +73,7 @@ class AskUserQuestionToolTest {
 		@DisplayName("Should create tool with valid function")
 		void shouldCreateToolWithValidFunction() {
 			AskUserQuestionTool customTool = AskUserQuestionTool.builder()
-				.questionAnswerFunction(questions -> Map.of())
+				.questionHandler(questions -> Map.of())
 				.build();
 			assertThat(customTool).isNotNull();
 		}
@@ -81,9 +81,9 @@ class AskUserQuestionToolTest {
 		@Test
 		@DisplayName("Should reject null function in builder")
 		void shouldRejectNullFunctionInBuilder() {
-			assertThatThrownBy(() -> AskUserQuestionTool.builder().questionAnswerFunction(null))
+			assertThatThrownBy(() -> AskUserQuestionTool.builder().questionHandler(null))
 				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining("questionAnswerFunction must not be null");
+				.hasMessageContaining("questionHandler must not be null");
 		}
 
 		@Test
@@ -91,7 +91,7 @@ class AskUserQuestionToolTest {
 		void shouldRejectBuildWithoutFunction() {
 			assertThatThrownBy(() -> AskUserQuestionTool.builder().build())
 				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining("questionAnswerFunction must be provided");
+				.hasMessageContaining("questionHandler must be provided");
 		}
 
 	}
@@ -404,7 +404,7 @@ class AskUserQuestionToolTest {
 		void shouldHandleSingleSelectQuestionWorkflow() {
 			AtomicReference<Map<String, String>> capturedAnswers = new AtomicReference<>();
 			AskUserQuestionTool customTool = AskUserQuestionTool.builder()
-				.questionAnswerFunction(questions -> {
+				.questionHandler(questions -> {
 					Map<String, String> answers = new HashMap<>();
 					answers.put("Which library should we use?", "React");
 					capturedAnswers.set(answers);
@@ -428,7 +428,7 @@ class AskUserQuestionToolTest {
 		void shouldHandleMultiSelectQuestionWorkflow() {
 			AtomicReference<Map<String, String>> capturedAnswers = new AtomicReference<>();
 			AskUserQuestionTool customTool = AskUserQuestionTool.builder()
-				.questionAnswerFunction(questions -> {
+				.questionHandler(questions -> {
 					Map<String, String> answers = new HashMap<>();
 					// Join multiple selections with ", "
 					answers.put("Which features?", "Authentication, Database");
@@ -452,7 +452,7 @@ class AskUserQuestionToolTest {
 		void shouldHandleFreeTextInput() {
 			AtomicReference<Map<String, String>> capturedAnswers = new AtomicReference<>();
 			AskUserQuestionTool customTool = AskUserQuestionTool.builder()
-				.questionAnswerFunction(questions -> {
+				.questionHandler(questions -> {
 					Map<String, String> answers = new HashMap<>();
 					// User provides custom text instead of selecting an option
 					answers.put("Which database?", "PostgreSQL");
@@ -476,7 +476,7 @@ class AskUserQuestionToolTest {
 		void shouldHandleMultipleQuestionsWithMixedTypes() {
 			AtomicReference<Map<String, String>> capturedAnswers = new AtomicReference<>();
 			AskUserQuestionTool customTool = AskUserQuestionTool.builder()
-				.questionAnswerFunction(questions -> {
+				.questionHandler(questions -> {
 					Map<String, String> answers = new HashMap<>();
 					answers.put("Which format?", "JSON");
 					answers.put("Which methods?", "GET, POST");
@@ -510,7 +510,7 @@ class AskUserQuestionToolTest {
 		@DisplayName("Should reject null answers map")
 		void shouldRejectNullAnswersMap() {
 			AskUserQuestionTool invalidTool = AskUserQuestionTool.builder()
-				.questionAnswerFunction(questions -> null)
+				.questionHandler(questions -> null)
 				.build();
 
 			List<Option> options = List.of(new Option("A", "First"), new Option("B", "Second"));
@@ -518,14 +518,14 @@ class AskUserQuestionToolTest {
 
 			assertThatThrownBy(() -> invalidTool.askUserQuestion(questions, null))
 				.isInstanceOf(AskUserQuestionTool.InvalidUserAnswerException.class)
-				.hasMessageContaining("questionAnswerFunction returned null");
+				.hasMessageContaining("questionHandler returned null");
 		}
 
 		@Test
 		@DisplayName("Should reject missing answers for questions")
 		void shouldRejectMissingAnswersForQuestions() {
 			AskUserQuestionTool invalidTool = AskUserQuestionTool.builder()
-				.questionAnswerFunction(questions -> new HashMap<>())
+				.questionHandler(questions -> new HashMap<>())
 				.build();
 
 			List<Option> options = List.of(new Option("A", "First"), new Option("B", "Second"));
@@ -540,7 +540,7 @@ class AskUserQuestionToolTest {
 		@DisplayName("Should reject null answer values")
 		void shouldRejectNullAnswerValues() {
 			AskUserQuestionTool invalidTool = AskUserQuestionTool.builder()
-				.questionAnswerFunction(questions -> {
+				.questionHandler(questions -> {
 					Map<String, String> answers = new HashMap<>();
 					answers.put("Question?", null);
 					return answers;
@@ -566,7 +566,7 @@ class AskUserQuestionToolTest {
 		void shouldHandleConcurrentInvocationsSafely() throws InterruptedException {
 			AtomicInteger callCount = new AtomicInteger(0);
 			AskUserQuestionTool threadSafeTool = AskUserQuestionTool.builder()
-				.questionAnswerFunction(questions -> {
+				.questionHandler(questions -> {
 					callCount.incrementAndGet();
 					Map<String, String> answers = new HashMap<>();
 					for (Question q : questions) {

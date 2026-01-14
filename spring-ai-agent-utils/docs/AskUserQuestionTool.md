@@ -7,7 +7,7 @@ A tool for asking users clarifying questions during AI agent execution. Enables 
 - Support for single-select and multi-select questions
 - Free-text input support beyond predefined options
 - 1-10 questions per interaction
-- Custom function callbacks for UI integration
+- Custom `QuestionHandler` callbacks for UI integration
 - Optional answer validation with configurable behavior
 - Enhanced AI model integration with @JsonPropertyDescription annotations
 
@@ -25,10 +25,9 @@ The tool follows the question-answer workflow: AI generates questions with optio
 // The AI agent will call this tool automatically when it needs input
 // For example, when asked: "Help me choose a database for my app"
 AskUserQuestionTool askTool = AskUserQuestionTool.builder()
-    .questionAnswerFunction(questions -> {
-        // Display questions to user via your UI
-        Map<String, String> answers = collectUserAnswers(questions);
-        return answers;
+    .questionHandler(questions -> {
+        // Display questions to user via your UI and collect answers
+        return collectUserAnswers(questions);
     })
     .build();
 
@@ -37,20 +36,20 @@ ChatClient chatClient = chatClientBuilder
     .build();
 ```
 
-You have to provide a custom `questionAnswerFunction(Function<List<Question>, Map<String, String>>)` function to handle the AI questions.
+You must provide a custom `QuestionHandler` implementation via the `questionHandler()` builder method.
 
-The `AskUserQuestionTool` class is thread-safe and can be used concurrently by multiple threads. However, the provided `questionAnswerFunction` must also be thread-safe if shared state is maintained.
+The `AskUserQuestionTool` class is thread-safe. However, the provided `QuestionHandler` must also be thread-safe if it maintains shared state.
 
 All data structures are immutable with defensive copies. The `options` list is copied on Question construction and all returned collections cannot be modified.
 
 ## Question Format
 
 The input Questions list cannot be null or empty and can contain 1-10 questions.
-Each [Question](https://github.com/spring-ai-community/spring-ai-agent-utils/blob/main/spring-ai-agent-utils/src/main/java/org/springaicommunity/agent/tools/AskUserQuestionTool.java#L90C16-L90C24) received from the AI consists of:
+Each `Question` received from the AI consists of:
 
 - `question` - The complete question text. Required, not blank, should end with "?"
 - `header` - Short label for UI display. Required, max 12 characters
-- `options` - List of the available [Options](https://github.com/spring-ai-community/spring-ai-agent-utils/blob/main/spring-ai-agent-utils/src/main/java/org/springaicommunity/agent/tools/AskUserQuestionTool.java#L118). Each [Options](https://github.com/spring-ai-community/spring-ai-agent-utils/blob/main/spring-ai-agent-utils/src/main/java/org/springaicommunity/agent/tools/AskUserQuestionTool.java#L118) has:
+- `options` - List of the available `Options`. Each `Options` has:
     - `label` - Display text (e.g., "React", "Vue", "Angular")
     - `description` - Explanation of what this option means
 - `multiSelect` - Flag indicating if multiple selections are allowed. Defaults to false if null.
@@ -86,7 +85,7 @@ Each [Question](https://github.com/spring-ai-community/spring-ai-agent-utils/blo
 
 ## Answer Format
 
-The `questionAnswerFunction` receives a `List<Question>` and should return a `Map<String, String>` with answers:
+The `QuestionHandler` receives a `List<Question>` and returns a `Map<String, String>` with answers:
 - **Keys:** The question text (from `Question.question` field)
 - **Values:** Selected option label(s)
   - Single-select: `"React"`
@@ -94,27 +93,20 @@ The `questionAnswerFunction` receives a `List<Question>` and should return a `Ma
   - Free-text: Any custom text the user provides
 
 ```java
-// Example function implementation
-Function<List<Question>, Map<String, String>> handler = questions -> {
+// Example handler implementation
+QuestionHandler handler = questions -> {
     Map<String, String> answers = new HashMap<>();
     for (Question q : questions) {
-        // Collect user input for each question
         String answer = promptUser(q);
         answers.put(q.question(), answer);
     }
     return answers;
 };
-
-// Example answer map
-Map<String, String> answers = Map.of(
-    "Which library should we use?", "Day.js",
-    "Which features do you want?", "Authentication, Database"
-);
 ```
 
 ### Error Handling
 
-By default, the tool automatically validates the answers returned by `questionAnswerFunction`:
+By default, the tool validates the answers returned by the `QuestionHandler`:
 
 - The returned map is non-null and all questions have corresponding answers (keys match question text)
 - No answer values are null (empty strings are acceptable)
@@ -132,7 +124,7 @@ You can disable answer validation by setting `answersValidation(false)` when bui
 
 ```java
 AskUserQuestionTool askTool = AskUserQuestionTool.builder()
-    .questionAnswerFunction(questions -> collectUserAnswers(questions))
+    .questionHandler(questions -> collectUserAnswers(questions))
     .answersValidation(false)  // Disable validation
     .build();
 ```
@@ -148,7 +140,7 @@ public class ConsoleQuestionHandler {
 
     public static AskUserQuestionTool createTool() {
         return AskUserQuestionTool.builder()
-            .questionAnswerFunction(ConsoleQuestionHandler::handleQuestions)
+            .questionHandler(ConsoleQuestionHandler::handleQuestions)
             .build();
     }
 
@@ -209,7 +201,7 @@ public class WebQuestionHandler {
 
     public AskUserQuestionTool createTool() {
         return AskUserQuestionTool.builder()
-            .questionAnswerFunction(this::handleQuestions)
+            .questionHandler(this::handleQuestions)
             .build();
     }
 
