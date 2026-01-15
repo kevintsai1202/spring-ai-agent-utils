@@ -2,6 +2,8 @@
 
 A structured task list management tool for AI coding sessions. Helps AI agents track progress, organize complex tasks, and provide visibility into task execution.
 
+https://platform.claude.com/docs/en/agent-sdk/todo-tracking
+
 **Features:**
 - Create and manage todo lists with pending, in_progress, and completed states
 - Validates exactly one task is in_progress at a time

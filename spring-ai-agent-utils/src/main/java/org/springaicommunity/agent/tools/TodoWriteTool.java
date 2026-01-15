@@ -16,7 +16,6 @@
 package org.springaicommunity.agent.tools;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,10 +25,10 @@ import org.springframework.ai.tool.annotation.Tool;
 /**
  * Creates and manages structured task lists for AI coding sessions.
  * <p>
- * This is a Spring AI implementation of Claude Code's TodoWrite tool, enabling AI agents
- * to track progress, organize complex tasks, and provide visibility into task execution.
- * The tool validates task states to ensure only one task is in progress at a time and
- * that all task data is properly formatted.
+ * This is a Spring AI implementation of Claude Code's like TodoWrite tool, enabling AI
+ * agents to track progress, organize complex tasks, and provide visibility into task
+ * execution. The tool validates task states to ensure only one task is in progress at a
+ * time and that all task data is properly formatted.
  *
  * @author Christian Tzolov
  */
@@ -37,17 +36,16 @@ public class TodoWriteTool {
 
 	private static final Logger logger = LoggerFactory.getLogger(TodoWriteTool.class);
 
-	private final Consumer<Todos> todoListConsumer;
+	private final TodoEventHandler todoListConsumer;
 
-	/**
-	 * @deprecated Use {@link Builder} to create an instance with custom behavior.
-	 */
-	@Deprecated
-	public TodoWriteTool() {
-		this(todos -> logger.debug("Updated Todos: {}", todos));
+	@FunctionalInterface
+	public interface TodoEventHandler {
+
+		void handle(Todos todos);
+
 	}
 
-	protected TodoWriteTool(Consumer<Todos> todoListConsumer) {
+	protected TodoWriteTool(TodoEventHandler todoListConsumer) {
 		this.todoListConsumer = todoListConsumer;
 	}
 
@@ -248,7 +246,7 @@ public class TodoWriteTool {
 		// Validate the todos
 		this.validateTodos(todos);
 
-		this.todoListConsumer.accept(todos);
+		this.todoListConsumer.handle(todos);
 
 		return "Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable";
 	}
@@ -317,15 +315,15 @@ public class TodoWriteTool {
 
 	public static class Builder {
 
-		private Consumer<Todos> todoListConsumer = todos -> logger.debug("Updated Todos: {}", todos);
+		private TodoEventHandler todoEventHandler = todos -> logger.debug("Updated Todos: {}", todos);
 
-		public Builder todoListConsumer(Consumer<Todos> todoListConsumer) {
-			this.todoListConsumer = todoListConsumer;
+		public Builder todoEventHandler(TodoEventHandler todoEventHandler) {
+			this.todoEventHandler = todoEventHandler;
 			return this;
 		}
 
 		public TodoWriteTool build() {
-			return new TodoWriteTool(this.todoListConsumer);
+			return new TodoWriteTool(this.todoEventHandler);
 		}
 
 	}

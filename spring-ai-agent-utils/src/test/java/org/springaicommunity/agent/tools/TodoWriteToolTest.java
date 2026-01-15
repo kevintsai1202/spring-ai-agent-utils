@@ -47,7 +47,7 @@ class TodoWriteToolTest {
 	void setUp() {
 		this.capturedTodos = new AtomicReference<>();
 		this.tool = TodoWriteTool.builder()
-			.todoListConsumer(this.capturedTodos::set)
+			.todoEventHandler(this.capturedTodos::set)
 			.build();
 	}
 
@@ -67,7 +67,7 @@ class TodoWriteToolTest {
 		void shouldCreateWithCustomConsumer() {
 			AtomicReference<Todos> ref = new AtomicReference<>();
 			TodoWriteTool customTool = TodoWriteTool.builder()
-				.todoListConsumer(ref::set)
+				.todoEventHandler(ref::set)
 				.build();
 			assertThat(customTool).isNotNull();
 		}
