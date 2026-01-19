@@ -178,14 +178,15 @@ mvn spring-boot:run
 
 ## Examples
 
-Four comprehensive examples demonstrate different use cases:
+| Example | Description |
+|---------|-------------|
+| [code-agent-demo](examples/code-agent-demo) | Full-featured AI coding assistant with interactive CLI, all tools, and multi-model support |
+| [todo-demo](examples/todo-demo) | Structured task management with `TodoWriteTool` and real-time progress tracking |
+| [subagent-demo](examples/subagent-demo) | Hierarchical sub-agent system with custom sub-agents and TaskTools integration |
+| [skills-demo](examples/skills-demo) | SkillsTool system with custom skill development and the ai-tuto example |
+| [ask-user-question-demo](examples/ask-user-question-demo) | Interactive agent-user communication with `AskUserQuestionTool` |
 
-- [code-agent-demo](examples/code-agent-demo) - Full-featured AI coding assistant with interactive CLI, all tools, conversation memory, and multi-model support. Best for understanding complete agent architectures.
-- [subagent-demo](examples/subagent-demo) - Demonstrates hierarchical sub-agent system with custom Spring AI expert sub-agent and TaskTools integration. Best for learning hierarchical agent patterns.
-- [skills-demo](examples/skills-demo) - Focused demonstration of the SkillsTool system with custom skill development, helper scripts, and the ai-tuto educational skill example.
-- [ask-user-question-demo](examples/ask-user-question-demo) - Console-based chat application demonstrating the AskUserQuestionTool with interactive questions, single/multi-select support, and custom answer parsing.
-
-See the [Examples README](examples/README.md) for detailed setup, configuration, and usage guide for all examples.
+See [examples/README.md](examples/README.md) for setup and usage details.
 
 ## License
 
