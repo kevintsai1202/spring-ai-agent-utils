@@ -43,13 +43,13 @@ While these tools can be used standalone, truly agentic behavior emerges when th
 <dependency>
     <groupId>org.springaicommunity</groupId>
     <artifactId>spring-ai-agent-utils</artifactId>
-    <version>0.3.0</version>
+    <version>0.4.2</version>
 </dependency>
 ```
 
 _Check the latest version:_ [![](https://img.shields.io/maven-central/v/org.springaicommunity/spring-ai-agent-utils.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/org.springaicommunity/spring-ai-agent-utils)
 
-> **Note:** You need Sping-AI version `2.0.0-SNAPSHOT` or `2.0.0-M2` when released.
+> **Note:** You need Spring AI version `2.0.0-M2` or later.
 
 
 ## Quick Start
@@ -97,9 +97,9 @@ public class Application {
                 // Task orchestration
                 .defaultTools(TodoWriteTool.builder().build())
 
-                // User feedback tool
+                // User feedback tool (use CommandLineQuestionHandler for CLI apps)
                 .defaultTools(AskUserQuestionTool.builder()
-                    .questionHandler(questions -> handleUserQuestions(questions))
+                    .questionHandler(new CommandLineQuestionHandler())
                     .build())
 
 				// Advisors
@@ -317,7 +317,13 @@ Ask users clarifying questions during AI agent execution. Enables agents to gath
 
 **Quick Example:**
 ```java
+// For CLI applications, use the provided CommandLineQuestionHandler
 AskUserQuestionTool askTool = AskUserQuestionTool.builder()
+    .questionHandler(new CommandLineQuestionHandler())
+    .build();
+
+// Or implement a custom handler for web/GUI applications
+AskUserQuestionTool customTool = AskUserQuestionTool.builder()
     .questionHandler(questions -> {
         // Display questions to user via your UI
         Map<String, String> answers = collectUserAnswers(questions);
@@ -331,7 +337,7 @@ AskUserQuestionTool askTool = AskUserQuestionTool.builder()
 
 **Demo Application:**
 
-See the [ask-user-question-demo](../examples/ask-user-question-demo) for a complete console-based implementation.
+See the [ask-user-question-demo](../examples/ask-user-question-demo) for a complete console-based implementation using `CommandLineQuestionHandler`.
 
 ---
 
@@ -425,6 +431,8 @@ String response = chatClient
 **Built-in Sub-Agents:**
 - **general-purpose** - Complex research and multi-step tasks with full tool access
 - **Explore** - Fast, read-only codebase exploration with thoroughness levels (quick/medium/very thorough)
+- **Plan** - Software architect agent for designing implementation plans, identifying critical files, and considering architectural trade-offs
+- **Bash** - Command execution specialist for git operations, build commands, and other terminal tasks
 
 **Create Custom Sub-Agent:** `.claude/agents/code-reviewer.md`
 ```markdown

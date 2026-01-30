@@ -38,6 +38,9 @@ import org.springframework.ai.tool.function.FunctionToolCallback;
 import org.springframework.util.Assert;
 
 /**
+ * Tool for launching specialized subagents to handle complex, multi-step tasks.
+ * Supports both synchronous and background execution modes.
+ *
  * @author Christian Tzolov
  */
 public class TaskTool {
@@ -198,6 +201,10 @@ public class TaskTool {
 			this.subagentReferences.add(new SubagentReference("classpath:/agent/GENERAL_PURPOSE_SUBAGENT.md",
 					ClaudeSubagentDefinition.KIND, null));
 			this.subagentReferences.add(new SubagentReference("classpath:/agent/EXPLORE_SUBAGENT.md",
+					ClaudeSubagentDefinition.KIND, null));
+			this.subagentReferences.add(new SubagentReference("classpath:/agent/PLAN_SUBAGENT.md",
+					ClaudeSubagentDefinition.KIND, null));
+			this.subagentReferences.add(new SubagentReference("classpath:/agent/BASH_SUBAGENT.md",
 					ClaudeSubagentDefinition.KIND, null));
 
 			// Register built-in Claude subagent resolvers

@@ -28,7 +28,8 @@ spring-ai-agent-utils/
     ├── code-agent-demo/            # Full-featured AI coding assistant
     ├── ask-user-question-demo/     # Interactive question-answer demo
     ├── skills-demo/                # Focused skills system demo
-    └── subagent-demo/              # Extensible sub-agent example
+    ├── subagent-demo/              # Markdown-defined local sub-agents
+    └── subagent-a2a-demo/          # A2A protocol remote sub-agents
 ```
 
 ## Agentic Utils
@@ -74,13 +75,13 @@ While these tools can be used standalone, truly agentic behavior emerges when th
 <dependency>
     <groupId>org.springaicommunity</groupId>
     <artifactId>spring-ai-agent-utils</artifactId>
-    <version>0.3.0</version>
+    <version>0.4.2</version>
 </dependency>
 ```
 
 _Check the latest version:_ [![](https://img.shields.io/maven-central/v/org.springaicommunity/spring-ai-agent-utils.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/org.springaicommunity/spring-ai-agent-utils)
 
-> **Note:** You need Sping-AI version `2.0.0-SNAPSHOT` or `2.0.0-M2` when released.
+> **Note:** You need Spring AI version `2.0.0-M2` or later.
 
 **2. Configure your agent:**
 
@@ -127,9 +128,9 @@ public class Application {
                 // Task orchestration
                 .defaultTools(TodoWriteTool.builder().build())
 
-                // User feedback tool
+                // User feedback tool (use CommandLineQuestionHandler for CLI apps)
                 .defaultTools(AskUserQuestionTool.builder()
-                    .questionHandler(questions -> handleUserQuestions(questions))
+                    .questionHandler(new CommandLineQuestionHandler())
                     .build())
 
 				// Advisors
@@ -162,7 +163,7 @@ This project reimplements key Claude Code features based on:
 
 - Java 17+
 - Spring Boot 3.x / 4.x
-- Spring AI 2.0.0-SNAPSHOT (or 2.0.0-M2 when released)
+- Spring AI 2.0.0-M2 or later
 - Maven 3.6+
 
 ## Building
@@ -182,7 +183,8 @@ mvn spring-boot:run
 |---------|-------------|
 | [code-agent-demo](examples/code-agent-demo) | Full-featured AI coding assistant with interactive CLI, all tools, and multi-model support |
 | [todo-demo](examples/todo-demo) | Structured task management with `TodoWriteTool` and real-time progress tracking |
-| [subagent-demo](examples/subagent-demo) | Hierarchical sub-agent system with custom sub-agents and TaskTools integration |
+| [subagent-demo](examples/subagent-demo) | Hierarchical sub-agent system with Markdown-defined local sub-agents |
+| [subagent-a2a-demo](examples/subagent-a2a-demo) | A2A protocol integration for delegating tasks to remote agents |
 | [skills-demo](examples/skills-demo) | SkillsTool system with custom skill development and the ai-tuto example |
 | [ask-user-question-demo](examples/ask-user-question-demo) | Interactive agent-user communication with `AskUserQuestionTool` |
 
