@@ -19,7 +19,7 @@ Before crafting your explanation:
 Take time to think through these options. A well-chosen structure is more valuable than a quick response.
 
 **If concept is unfamiliar or requires research:** Load `research_methodology.md` for detailed guidance.
-**If user provides YouTube video:** Call `uv run scripts/get_youtube_transcript.py <video_url_or_id>` for video's transcript.
+**If user provides YouTube video:** Run this command exactly: `cd <skill_base_dir> && uv run scripts/get_youtube_transcript.py <video_url_or_id>`
 
 ## Core Teaching Framework
 

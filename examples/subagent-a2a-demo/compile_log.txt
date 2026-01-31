@@ -1,0 +1,54 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------< org.springaicommunity:subagent-a2a-demo >---------------
+[INFO] Building subagent-a2a-demo 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.5.0:clean (default-clean) @ subagent-a2a-demo ---
+[INFO] Deleting E:\github\spring-ai-agent-utils\examples\subagent-a2a-demo\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ subagent-a2a-demo ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 8 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ subagent-a2a-demo ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 5 source files with javac [debug parameters release 17] to target\classes
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /E:/github/spring-ai-agent-utils/examples/subagent-a2a-demo/src/main/java/org/springaicommunity/agent/MyLoggingAdvisor.java:[44,94] ')' expected
+[ERROR] /E:/github/spring-ai-agent-utils/examples/subagent-a2a-demo/src/main/java/org/springaicommunity/agent/MyLoggingAdvisor.java:[44,95] not a statement
+[ERROR] /E:/github/spring-ai-agent-utils/examples/subagent-a2a-demo/src/main/java/org/springaicommunity/agent/MyLoggingAdvisor.java:[44,106] ';' expected
+[ERROR] /E:/github/spring-ai-agent-utils/examples/subagent-a2a-demo/src/main/java/org/springaicommunity/agent/a2a/A2ASubagentExecutor.java:[73,63] ')' expected
+[ERROR] /E:/github/spring-ai-agent-utils/examples/subagent-a2a-demo/src/main/java/org/springaicommunity/agent/a2a/A2ASubagentExecutor.java:[73,64] not a statement
+[ERROR] /E:/github/spring-ai-agent-utils/examples/subagent-a2a-demo/src/main/java/org/springaicommunity/agent/a2a/A2ASubagentExecutor.java:[73,73] ';' expected
+[ERROR] /E:/github/spring-ai-agent-utils/examples/subagent-a2a-demo/src/main/java/org/springaicommunity/agent/a2a/A2ASubagentExecutor.java:[83,101] ')' expected
+[ERROR] /E:/github/spring-ai-agent-utils/examples/subagent-a2a-demo/src/main/java/org/springaicommunity/agent/a2a/A2ASubagentExecutor.java:[83,102] not a statement
+[ERROR] /E:/github/spring-ai-agent-utils/examples/subagent-a2a-demo/src/main/java/org/springaicommunity/agent/a2a/A2ASubagentExecutor.java:[83,110] ';' expected
+[INFO] 9 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.539 s
+[INFO] Finished at: 2026-01-31T08:34:43+08:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:compile (default-compile) on project subagent-a2a-demo: Compilation failure: Compilation failure: 
+[ERROR] /E:/github/spring-ai-agent-utils/examples/subagent-a2a-demo/src/main/java/org/springaicommunity/agent/MyLoggingAdvisor.java:[44,94] ')' expected
+[ERROR] /E:/github/spring-ai-agent-utils/examples/subagent-a2a-demo/src/main/java/org/springaicommunity/agent/MyLoggingAdvisor.java:[44,95] not a statement
+[ERROR] /E:/github/spring-ai-agent-utils/examples/subagent-a2a-demo/src/main/java/org/springaicommunity/agent/MyLoggingAdvisor.java:[44,106] ';' expected
+[ERROR] /E:/github/spring-ai-agent-utils/examples/subagent-a2a-demo/src/main/java/org/springaicommunity/agent/a2a/A2ASubagentExecutor.java:[73,63] ')' expected
+[ERROR] /E:/github/spring-ai-agent-utils/examples/subagent-a2a-demo/src/main/java/org/springaicommunity/agent/a2a/A2ASubagentExecutor.java:[73,64] not a statement
+[ERROR] /E:/github/spring-ai-agent-utils/examples/subagent-a2a-demo/src/main/java/org/springaicommunity/agent/a2a/A2ASubagentExecutor.java:[73,73] ';' expected
+[ERROR] /E:/github/spring-ai-agent-utils/examples/subagent-a2a-demo/src/main/java/org/springaicommunity/agent/a2a/A2ASubagentExecutor.java:[83,101] ')' expected
+[ERROR] /E:/github/spring-ai-agent-utils/examples/subagent-a2a-demo/src/main/java/org/springaicommunity/agent/a2a/A2ASubagentExecutor.java:[83,102] not a statement
+[ERROR] /E:/github/spring-ai-agent-utils/examples/subagent-a2a-demo/src/main/java/org/springaicommunity/agent/a2a/A2ASubagentExecutor.java:[83,110] ';' expected
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

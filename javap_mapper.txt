@@ -1,0 +1,13 @@
+Compiled from "McpJsonMapper.java"
+public interface io.modelcontextprotocol.json.McpJsonMapper {
+  public abstract <T> T readValue(java.lang.String, java.lang.Class<T>) throws java.io.IOException;
+  public abstract <T> T readValue(byte[], java.lang.Class<T>) throws java.io.IOException;
+  public abstract <T> T readValue(java.lang.String, io.modelcontextprotocol.json.TypeRef<T>) throws java.io.IOException;
+  public abstract <T> T readValue(byte[], io.modelcontextprotocol.json.TypeRef<T>) throws java.io.IOException;
+  public abstract <T> T convertValue(java.lang.Object, java.lang.Class<T>);
+  public abstract <T> T convertValue(java.lang.Object, io.modelcontextprotocol.json.TypeRef<T>);
+  public abstract java.lang.String writeValueAsString(java.lang.Object) throws java.io.IOException;
+  public abstract byte[] writeValueAsBytes(java.lang.Object) throws java.io.IOException;
+  public static io.modelcontextprotocol.json.McpJsonMapper getDefault();
+  public static io.modelcontextprotocol.json.McpJsonMapper createDefault();
+}

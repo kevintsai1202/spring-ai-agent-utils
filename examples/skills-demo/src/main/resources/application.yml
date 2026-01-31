@@ -1,0 +1,39 @@
+# Conversion to YAML from Properties formar report
+# Errors:
+# - Direct assignment 'agent.model=claude-sonnet-4-5-20250929' can not be combined with sub-property assignment 'agent.model.knowledge...'. Direct assignment is dropped!
+# Warnings:
+# - The yaml file had comments which are lost in the refactoring!
+spring:
+  application:
+    name: recursive-advisor-demo
+  main:
+    web-application-type: none
+  ai:
+    # anthropic:
+    #   api-key: ${ANTHROPIC_API_KEY}
+    #   chat:
+    #     options:
+    #       model: claude-sonnet-4-5-20250929
+    #       max-tokens: 1000
+    openai-sdk:
+      base-url: https://hnd1.aihub.zeabur.ai/
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: gpt-5-mini
+          temperature: 1.0
+    # google:
+    #   genai:
+    #     project-id: ${GOOGLE_CLOUD_PROJECT}
+    #     location: global
+    #     chat:
+    #       options:
+    #         model: gemini-3-pro-preview
+agent:
+  skills:
+    dirs: classpath:/.claude/skills
+  mcp:
+    dirs: classpath:/.claude/mcp
+  model:
+    knowledge:
+      cutoff: '2025-01-01'

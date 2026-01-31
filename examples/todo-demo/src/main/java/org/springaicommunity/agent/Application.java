@@ -31,8 +31,10 @@ public class Application {
 		SpringApplication.run(Application.class, args);
 	}
 
-	// Find the top 10 Tom Hanks movies, then group them in groups of 2, and finally print
-	// the title name in inverted (e.g. last char first). Use TodoWrite to organize your
+	// Find the top 10 Tom Hanks movies, then group them in groups of 2, and finally
+	// print
+	// the title name in inverted (e.g. last char first). Use TodoWrite to organize
+	// your
 	// tasks.
 
 	@Bean

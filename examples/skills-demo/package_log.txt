@@ -1,0 +1,39 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------------< org.springaicommunity:skills-demo >------------------
+[INFO] Building skills-demo 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.5.0:clean (default-clean) @ skills-demo ---
+[INFO] Deleting E:\github\spring-ai-agent-utils\examples\skills-demo\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ skills-demo ---
+[INFO] Copying 2 resources from src\main\resources to target\classes
+[INFO] Copying 19 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ skills-demo ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 2 source files with javac [debug parameters release 17] to target\classes
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ skills-demo ---
+[INFO] skip non existing resourceDirectory E:\github\spring-ai-agent-utils\examples\skills-demo\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ skills-demo ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ skills-demo ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.4.2:jar (default-jar) @ skills-demo ---
+[INFO] Building jar: E:\github\spring-ai-agent-utils\examples\skills-demo\target\skills-demo-0.1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- spring-boot:4.0.1:repackage (repackage) @ skills-demo ---
+[INFO] Replacing main artifact E:\github\spring-ai-agent-utils\examples\skills-demo\target\skills-demo-0.1.0-SNAPSHOT.jar with repackaged archive, adding nested dependencies in BOOT-INF/.
+[INFO] The original artifact has been renamed to E:\github\spring-ai-agent-utils\examples\skills-demo\target\skills-demo-0.1.0-SNAPSHOT.jar.original
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  4.153 s
+[INFO] Finished at: 2026-01-29T16:23:13+08:00
+[INFO] ------------------------------------------------------------------------

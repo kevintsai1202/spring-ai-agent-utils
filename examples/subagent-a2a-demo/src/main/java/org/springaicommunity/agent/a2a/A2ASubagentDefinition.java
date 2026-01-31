@@ -15,14 +15,14 @@
 */
 package org.springaicommunity.agent.a2a;
 
-
 import io.a2a.spec.AgentCard;
 import org.springaicommunity.agent.tools.task.subagent.SubagentDefinition;
 import org.springaicommunity.agent.tools.task.subagent.SubagentReference;
 
 /**
  * A2A protocol subagent definition wrapping an AgentCard.
- * Demonstrates how to implement {@link SubagentDefinition} for remote agent protocols.
+ * Demonstrates how to implement {@link SubagentDefinition} for remote agent
+ * protocols.
  *
  * @author Christian Tzolov
  * @see <a href="https://google.github.io/A2A/">A2A Protocol Specification</a>

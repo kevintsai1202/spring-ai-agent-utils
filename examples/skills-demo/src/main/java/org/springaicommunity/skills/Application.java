@@ -9,6 +9,7 @@ import org.springaicommunity.agent.tools.FileSystemTools;
 import org.springaicommunity.agent.tools.ShellTools;
 import org.springaicommunity.agent.tools.SkillsTool;
 import org.springaicommunity.agent.tools.SmartWebFetchTool;
+import org.springaicommunity.agent.mcp.McpSkillLoader;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.ToolCallAdvisor;
@@ -27,10 +28,32 @@ public class Application {
 	}
 
 	@Bean
+	McpSkillLoader mcpSkillLoader() {
+		return new McpSkillLoader();
+	}
+
+	@Bean
 	CommandLineRunner commandLineRunner(ChatClient.Builder chatClientBuilder,
-			@Value("${agent.skills.dirs:Unknown}") List<Resource> agentSkillsDirs) throws IOException {
+			@Value("${agent.skills.dirs:Unknown}") List<Resource> agentSkillsDirs,
+			@Value("${agent.mcp.dirs:Unknown}") List<Resource> mcpSkillsDirs,
+			McpSkillLoader mcpSkillLoader,
+			@Value("${app.brave.api-key:}") String braveApiKey) throws IOException {
 
 		return args -> {
+
+			java.util.List<Object> tools = new java.util.ArrayList<>();
+			tools.add(ShellTools.builder().build());
+			tools.add(FileSystemTools.builder().build());
+			tools.add(SmartWebFetchTool.builder(chatClientBuilder.clone().build()).build());
+
+			// Load dynamic MCP skills
+			tools.addAll(mcpSkillLoader.loadMcpSkills(mcpSkillsDirs));
+
+			String resolvedBraveKey = (braveApiKey != null && !braveApiKey.isBlank()) ? braveApiKey
+					: System.getenv("BRAVE_API_KEY");
+			if (resolvedBraveKey != null && !resolvedBraveKey.isBlank()) {
+				tools.add(BraveWebSearchTool.builder(resolvedBraveKey).resultCount(15).build());
+			}
 
 			ChatClient chatClient = chatClientBuilder // @formatter:off
 				.defaultSystem("Always use the available skills to assist the user in their requests.")
@@ -38,19 +61,9 @@ public class Application {
 				// Skills tool
 				.defaultToolCallbacks(SkillsTool.builder().addSkillsResources(agentSkillsDirs).build())
 
-				// Built-in tools
-				.defaultTools(
-					//Bash execution tool
-					ShellTools.builder().build(),// built-in shell tools
-					// Read, Write and Edit files tool
-					FileSystemTools.builder().build(),// built-in file system tools
-					// Smart web fetch tool
-					SmartWebFetchTool.builder(chatClientBuilder.clone().build()).build(),
-					// Brave web search tool
-					BraveWebSearchTool.builder(System.getenv("BRAVE_API_KEY"))
-						.resultCount(15).build())
-				
-				
+				// Built-in tools and MCP tools
+				.defaultTools(tools.toArray())
+
 				.defaultAdvisors(
 					// Tool Calling advisor
 					ToolCallAdvisor.builder().build(),
@@ -64,14 +77,15 @@ public class Application {
 				// @formatter:on
 
 			var answer = chatClient
-				.prompt("""
-					Explain reinforcement learning in simple terms and use.
-					Use required skills.
-					Then use the Youtube video https://youtu.be/vXtfdGphr3c?si=xy8U2Al_Um5vE4Jd transcript to support your answer.
-					Use absolute paths for the skills and scripts. Do not ask me for more details.
-					""")
-				.call()
-				.content();
+					.prompt("""
+							請用簡單的語言解釋強化學習及其用途。
+							請運用所需的技能。
+							接著使用 Youtube 影片 https://youtu.be/vXtfdGphr3c?si=xy8U2Al_Um5vE4Jd 的逐字稿來佐證你的回答。
+							最後輸出成pdf檔案,自行定義檔名
+							Skills和scripts請使用絕對路徑。不要問我更多細節。
+							""")
+					.call()
+					.content();
 
 			System.out.println("The Answer: " + answer);
 		};

@@ -1,0 +1,14 @@
+Compiled from "StdioClientTransport.java"
+public class io.modelcontextprotocol.client.transport.StdioClientTransport implements io.modelcontextprotocol.spec.McpClientTransport {
+  public io.modelcontextprotocol.client.transport.StdioClientTransport(io.modelcontextprotocol.client.transport.ServerParameters, io.modelcontextprotocol.json.McpJsonMapper);
+  public reactor.core.publisher.Mono<java.lang.Void> connect(java.util.function.Function<reactor.core.publisher.Mono<io.modelcontextprotocol.spec.McpSchema$JSONRPCMessage>, reactor.core.publisher.Mono<io.modelcontextprotocol.spec.McpSchema$JSONRPCMessage>>);
+  protected java.lang.ProcessBuilder getProcessBuilder();
+  public void setStdErrorHandler(java.util.function.Consumer<java.lang.String>);
+  public void awaitForExit();
+  public reactor.core.publisher.Mono<java.lang.Void> sendMessage(io.modelcontextprotocol.spec.McpSchema$JSONRPCMessage);
+  protected void handleOutbound(java.util.function.Function<reactor.core.publisher.Flux<io.modelcontextprotocol.spec.McpSchema$JSONRPCMessage>, reactor.core.publisher.Flux<io.modelcontextprotocol.spec.McpSchema$JSONRPCMessage>>);
+  public reactor.core.publisher.Mono<java.lang.Void> closeGracefully();
+  public reactor.core.publisher.Sinks$Many<java.lang.String> getErrorSink();
+  public <T> T unmarshalFrom(java.lang.Object, io.modelcontextprotocol.json.TypeRef<T>);
+  static {};
+}
