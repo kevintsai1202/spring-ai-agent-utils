@@ -37,3 +37,7 @@ build/
 .flattened-pom.xml
 ### Local Config ###
 **/application-local.yml
+\#
+Logs
+*.log
+examples/skills-demo/*.txt
